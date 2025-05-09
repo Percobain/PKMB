@@ -27,6 +27,8 @@ import {
 } from '@/utils/uploadToIpfs'
 import {
   addIndianFlagOverlay,
+  normalModeProcessing,
+  savageModeProcessing,
   fetchTwitterProfileImage,
 } from '@/utils/imageProcessing'
 import {
@@ -39,6 +41,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 
 export function Nft() {
   // Wallet connection state
@@ -51,6 +54,7 @@ export function Nft() {
   const [processedImage, setProcessedImage] = useState<string | null>(null)
   const [nftName, setNftName] = useState('')
   const [nftDescription, setNftDescription] = useState('')
+  const [processingMode, setProcessingMode] = useState<'normal' | 'savage'>('normal')
 
   // UI state
   const [activeTab, setActiveTab] = useState('upload')
@@ -125,13 +129,20 @@ export function Nft() {
     }
   }
 
-  // Process image with Indian flag overlay
+  // Process image with selected mode
   const processImage = async () => {
     if (!previewImage) return
 
     setIsLoading(true)
     try {
-      const processedBlob = await addIndianFlagOverlay(previewImage)
+      let processedBlob;
+      
+      if (processingMode === 'normal') {
+        processedBlob = await normalModeProcessing(previewImage);
+      } else {
+        processedBlob = await savageModeProcessing(previewImage);
+      }
+      
       const processedUrl = URL.createObjectURL(processedBlob)
       setProcessedImage(processedUrl)
 
@@ -188,6 +199,7 @@ export function Nft() {
             trait_type: 'Source',
             value: activeTab === 'twitter' ? 'Twitter' : 'Upload',
           },
+          { trait_type: 'Style', value: processingMode === 'normal' ? 'Indian Flag' : 'Savage Mode' },
           { trait_type: 'Flag', value: 'India' },
         ],
       }
@@ -437,6 +449,29 @@ export function Nft() {
                         onChange={(e) => setNftDescription(e.target.value)}
                       />
                     </div>
+
+                    <div className="space-y-2 mt-4">
+                      <Label>Processing Mode</Label>
+                      <RadioGroup 
+                        value={processingMode}
+                        onValueChange={(value) => setProcessingMode(value as 'normal' | 'savage')}
+                        className="flex space-x-4"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="normal" id="normal" />
+                          <Label htmlFor="normal">Normal Mode</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="savage" id="savage" />
+                          <Label htmlFor="savage">Savage Mode</Label>
+                        </div>
+                      </RadioGroup>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {processingMode === 'normal' 
+                          ? 'Normal mode adds the Indian flag and official stamp to your image.'
+                          : 'Savage mode adds decorative elements and a patriotic message to your image.'}
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
 
@@ -452,7 +487,9 @@ export function Nft() {
                         Processing...
                       </>
                     ) : (
-                      'Preview with Indian Flag'
+                      processingMode === 'normal' 
+                        ? 'Preview with Indian Flag' 
+                        : 'Preview in Savage Mode'
                     )}
                   </Button>
                 </CardFooter>
@@ -492,6 +529,13 @@ export function Nft() {
                           <div>{nftDescription}</div>
                         </div>
                       )}
+
+                      <div>
+                        <Label className="text-sm opacity-70">Style</Label>
+                        <div className="font-medium">
+                          {processingMode === 'normal' ? 'Normal Mode' : 'Savage Mode'}
+                        </div>
+                      </div>
 
                       <div className="bg-primary/10 p-3 rounded-md flex items-start space-x-3">
                         <Info size={18} className="text-primary mt-0.5" />
@@ -596,6 +640,10 @@ export function Nft() {
                         Token ID: <span className="font-mono">{tokenId}</span>
                       </p>
 
+                      <p className="text-sm">
+                        Style: <span className="font-medium">{processingMode === 'normal' ? 'Normal Mode' : 'Savage Mode'}</span>
+                      </p>
+
                       {txHash && (
                         <a
                           href={`https://sepolia.etherscan.io/tx/${txHash}`}
@@ -621,6 +669,7 @@ export function Nft() {
                       setProcessedImage(null)
                       setUploadedFile(null)
                       setTwitterUsername('')
+                      setProcessingMode('normal')
                       setMintingStep('editing')
                       setTxHash(null)
                       setTokenId(null)
