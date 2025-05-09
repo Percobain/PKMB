@@ -245,15 +245,6 @@ export function Faucet() {
                   </div>
                 </div>
 
-                {remainingTokens !== null && (
-                  <div className="text-sm flex justify-between items-center py-2">
-                    <span className="text-muted-foreground">
-                      Remaining tokens:
-                    </span>
-                    <span className="font-medium">{remainingTokens} PKMB</span>
-                  </div>
-                )}
-
                 {claimDetails.amount !== '0' && (
                   <div className="text-sm flex justify-between items-center py-2">
                     <span className="text-muted-foreground">
