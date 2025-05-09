@@ -1,4 +1,4 @@
-import { ModeToggle } from './ModeToggle'
+// import { ModeToggle } from './ModeToggle'
 import { Link } from 'react-router-dom'
 import { ConnectButton } from './ConnectButton'
 
@@ -11,7 +11,7 @@ export function Navbar() {
         </Link>
         <div className="flex items-center gap-4">
           <ConnectButton />
-          <ModeToggle />
+          {/* <ModeToggle /> */}
         </div>
       </div>
     </nav>

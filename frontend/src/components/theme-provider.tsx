@@ -6,7 +6,6 @@ type Theme = 'dark' | 'light' | 'system'
 
 type ThemeProviderProps = {
   children: React.ReactNode
-  defaultTheme?: Theme
   storageKey?: string
 }
 
@@ -16,7 +15,7 @@ type ThemeProviderState = {
 }
 
 const initialState: ThemeProviderState = {
-  theme: 'system',
+  theme: 'dark',
   setTheme: () => null,
 }
 
@@ -24,37 +23,30 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 
 export function ThemeProvider({
   children,
-  defaultTheme = 'system',
   storageKey = 'vite-ui-theme',
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
-  )
+  // Always use dark theme
+  const [theme] = useState<Theme>('dark')
 
   useEffect(() => {
     const root = window.document.documentElement
-
-    root.classList.remove('light', 'dark')
-
-    if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
-        .matches
-        ? 'dark'
-        : 'light'
-
-      root.classList.add(systemTheme)
-      return
+    
+    // Remove any existing theme classes
+    root.classList.remove('light', 'system')
+    
+    // Ensure dark class is always applied
+    if (!root.classList.contains('dark')) {
+      root.classList.add('dark')
     }
+  }, [])
 
-    root.classList.add(theme)
-  }, [theme])
-
+  // Keep the setTheme function for API compatibility, but make it do nothing
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme)
-      setTheme(theme)
+    setTheme: () => {
+      // Do nothing - always stay in dark mode
+      console.log('Theme switching is disabled - app is always in dark mode')
     },
   }
 
