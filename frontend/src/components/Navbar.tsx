@@ -1,5 +1,6 @@
 import { ModeToggle } from './ModeToggle'
 import { Link } from 'react-router-dom'
+import { ConnectButton } from './ConnectButton'
 
 export function Navbar() {
   return (
@@ -8,7 +9,10 @@ export function Navbar() {
         <Link to="/" className="font-bold text-xl">
           PKMB
         </Link>
-        <ModeToggle />
+        <div className="flex items-center gap-4">
+          <ConnectButton />
+          <ModeToggle />
+        </div>
       </div>
     </nav>
   )
