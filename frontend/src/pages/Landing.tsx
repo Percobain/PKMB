@@ -17,6 +17,7 @@ export function Landing() {
     const newsItems = [
       'Owning Pakistan since 1947 🔥',
       'We launch rockets 🚀, PK launch hashtags #',
+      'Chand pe jhanda aur Jhande pe Chand hone mei farak hota hai',
       'Every time we sneeze, Pakistan catches a cold 🤧',
       'Trying to match India with borrowed WiFi and pirated dreams.',
       'Chand pe jaane ka soch rahe hain, tum abhi tak Kashmir mein phase ho.',
@@ -26,7 +27,7 @@ export function Landing() {
     const interval = setInterval(() => {
       currentIndex = (currentIndex + 1) % newsItems.length
       setNewsText(newsItems[currentIndex])
-    }, 5000)
+    }, 1000)
 
     return () => clearInterval(interval)
   }, [])
@@ -104,30 +105,39 @@ export function Landing() {
             </motion.div>
           </motion.div>
 
-          {/* News Ticker */}
+          {/* News Ticker - Marquee Style */}
           <motion.div
             className="relative overflow-hidden mt-auto py-3 bg-black/30 backdrop-blur-sm rounded-lg border border-white/10 text-white"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.5 }}
+            transition={{ delay: 0 }}
           >
-            <motion.div
-              className="whitespace-nowrap text-center text-lg text-white"
-              initial={{ x: '100%' }}
-              animate={{ x: '-100%' }}
-              transition={{
-                duration: 15,
-                ease: 'linear',
-                repeat: Infinity,
-                repeatType: 'loop',
-              }}
-            >
-              {newsText}{' '}
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              {newsText}{' '}
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              {newsText}
-            </motion.div>
+            <div className="relative overflow-hidden w-full">
+              <motion.div
+                className="inline-flex whitespace-nowrap"
+                initial={{ x: '30%' }}
+                animate={{ x: '-100%' }}
+                transition={{
+                  duration: 60, // Increased duration to 60 seconds (was 40)
+                  repeat: Infinity,
+                  ease: 'linear',
+                  repeatType: 'loop',
+                }}
+              >
+                {[
+                  'Owning Pakistan since 1947 🔥',
+                  'We launch rockets 🚀, PK launch hashtags #',
+                  'Chand pe jhanda aur Jhande pe Chand hone mei farak hota hai',
+                  'Every time we sneeze, Pakistan catches a cold 🤧',
+                  'Trying to match India with borrowed WiFi and pirated dreams.',
+                  'Chand pe jaane ka soch rahe hain, tum abhi tak Kashmir mein phase ho.',
+                ].map((item, index) => (
+                  <span key={index} className="mx-8">
+                    {item}
+                  </span>
+                ))}
+              </motion.div>
+            </div>
           </motion.div>
         </div>
       </AuroraBackground>

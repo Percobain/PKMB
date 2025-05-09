@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
 import { Navbar } from '@/components/Navbar'
-import { Input } from '@/components/ui/input'
+// import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/card'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
-  ClipboardIcon,
+  // ClipboardIcon,
   CopyIcon,
   AlertCircle,
   CheckCircle2,
