@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
 import { Navbar } from '@/components/Navbar'
 import { Input } from '@/components/ui/input'
@@ -21,23 +21,25 @@ import {
 import { Loader2 } from 'lucide-react'
 import { AuroraBackground } from '@/components/ui/aurora-background'
 import { motion } from 'framer-motion'
-import { useToast } from '@/hooks/use-toast'
-
-// ABI for the faucet contract (simplified version)
-const faucetAbi = [
-  'function requestTokens(address recipient) external',
-  'function getTokenBalance() external view returns (uint256)',
-]
+import { toast } from 'sonner'
+import { useMetaMask } from '@/hooks/useMetamask'
+import { faucetAbi } from '@/abis/faucetAbi'
+import { erc20Abi } from '@/abis/erc20Abi'
 
 export function Faucet() {
-  const [address, setAddress] = useState('')
-  const [isValidAddress, setIsValidAddress] = useState(true)
+  const { isConnected, account, connect } = useMetaMask()
   const [isLoading, setIsLoading] = useState(false)
   const [transactionStatus, setTransactionStatus] = useState<
     'idle' | 'processing' | 'success' | 'error'
   >('idle')
+  const [errorMessage, setErrorMessage] = useState<string>('')
   const [remainingTokens, setRemainingTokens] = useState<string | null>(null)
-  const { toast } = useToast()
+  const [claimDetails, setClaimDetails] = useState({
+    amount: '0',
+    timeLeft: 0,
+    canClaim: false
+  })
+  const [txHash, setTxHash] = useState<string | null>(null)
 
   const faucetAddress =
     import.meta.env.VITE_Faucet || '0x8d7404a3D9b90877e4d1464b98b0D49bB3081203'
@@ -45,56 +47,98 @@ export function Faucet() {
     import.meta.env.VITE_PKMBToken ||
     '0xEf89f9724d93b3fF5Ef65E9c8E630EA95b5E5643'
 
-  const validateAddress = (addr: string) => {
-    try {
-      return ethers.utils.isAddress(addr)
-    } catch {
-      return false
-    }
-  }
-
-  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputAddress = e.target.value
-    setAddress(inputAddress)
-
-    if (inputAddress && !validateAddress(inputAddress)) {
-      setIsValidAddress(false)
-    } else {
-      setIsValidAddress(true)
-    }
-  }
-
-  const fetchTokenBalance = async () => {
+  const fetchFaucetDetails = async () => {
     try {
       if (window.ethereum) {
-        const provider = new ethers.providers.Web3Provider(window.ethereum)
+        const provider = new ethers.BrowserProvider(window.ethereum)
         const faucetContract = new ethers.Contract(
           faucetAddress,
           faucetAbi,
           provider
         )
-        const balance = await faucetContract.getTokenBalance()
-        setRemainingTokens(ethers.utils.formatEther(balance))
+        
+        // Get token contract from faucet
+        const tokenAddress = await faucetContract.pkmbToken()
+        
+        // Create token contract instance
+        const tokenContract = new ethers.Contract(
+          tokenAddress,
+          erc20Abi,
+          provider
+        )
+        
+        // Get claim amount
+        const claimAmount = await faucetContract.claimAmount()
+        const decimals = await tokenContract.decimals()
+        const formattedAmount = ethers.formatUnits(claimAmount, decimals)
+        
+        // Get token balance of faucet
+        const balance = await tokenContract.balanceOf(faucetAddress)
+        setRemainingTokens(ethers.formatUnits(balance, decimals))
+        
+        // Get claim interval and check if user can claim
+        if (account) {
+          const lastClaimTime = await faucetContract.lastClaimTime(account)
+          const claimInterval = await faucetContract.claimInterval()
+          const isPaused = await faucetContract.paused()
+          
+          const currentTime = Math.floor(Date.now() / 1000)
+          const nextClaimTime = Number(lastClaimTime) + Number(claimInterval)
+          const timeLeft = nextClaimTime - currentTime
+          
+          const canClaim = timeLeft <= 0 && !isPaused
+          
+          setClaimDetails({
+            amount: formattedAmount,
+            timeLeft: Math.max(0, timeLeft),
+            canClaim
+          })
+        }
       }
     } catch (error) {
-      console.error('Error fetching token balance:', error)
+      console.error('Error fetching faucet details:', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchFaucetDetails()
+    
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchFaucetDetails, 30000)
+    return () => clearInterval(interval)
+  }, [account])
+
+  const formatTimeLeft = (seconds: number) => {
+    if (seconds <= 0) return 'Now'
+    
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    const secs = seconds % 60
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m ${secs}s`
+    } else if (minutes > 0) {
+      return `${minutes}m ${secs}s`
+    } else {
+      return `${secs}s`
     }
   }
 
   const handleClaim = async () => {
-    if (!address || !validateAddress(address)) {
-      setIsValidAddress(false)
+    if (!isConnected) {
+      await connect()
       return
     }
 
     setIsLoading(true)
     setTransactionStatus('processing')
+    setErrorMessage('')
+    setTxHash(null)
 
     try {
       if (window.ethereum) {
-        await window.ethereum.request({ method: 'eth_requestAccounts' })
-        const provider = new ethers.providers.Web3Provider(window.ethereum)
-        const signer = provider.getSigner()
+        const provider = new ethers.BrowserProvider(window.ethereum)
+        const signer = await provider.getSigner()
 
         const faucetContract = new ethers.Contract(
           faucetAddress,
@@ -102,33 +146,50 @@ export function Faucet() {
           signer
         )
 
-        const tx = await faucetContract.requestTokens(address)
+        // Using claimTokens from the ABI - this is the correct function
+        const tx = await faucetContract.claimTokens()
+        setTxHash(tx.hash)
+        console.log('Transaction hash:', tx.hash)
+        
+        // Wait for transaction to be mined
         await tx.wait()
 
         setTransactionStatus('success')
-        toast({
-          title: 'Tokens claimed successfully!',
-          description: 'PKMB tokens have been sent to your wallet.',
-          variant: 'default',
+        toast.success('Tokens claimed successfully!', {
+          description: 'PKMB tokens have been sent to your wallet.'
         })
 
-        // Refresh token balance
-        fetchTokenBalance()
+        // Refresh faucet details
+        fetchFaucetDetails()
       } else {
-        toast({
-          title: 'Metamask not detected',
-          description: 'Please install Metamask to use this feature.',
-          variant: 'destructive',
+        toast.error('MetaMask not detected', {
+          description: 'Please install MetaMask to use this feature.'
         })
         setTransactionStatus('error')
+        setErrorMessage('MetaMask not detected. Please install MetaMask to use this feature.')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error claiming tokens:', error)
       setTransactionStatus('error')
-      toast({
-        title: 'Failed to claim tokens',
-        description: 'There was an error processing your request.',
-        variant: 'destructive',
+      
+      // Extract error message from blockchain error
+      let errorMsg = 'Failed to claim tokens. Please try again later.'
+      if (error.message) {
+        // Check for common faucet errors
+        if (error.message.includes('Claim interval not yet passed')) {
+          errorMsg = 'Please wait for the claim interval to pass before trying again.'
+        } else if (error.message.includes('Faucet is currently paused')) {
+          errorMsg = 'The faucet is currently paused.'
+        } else if (error.message.includes('Not enough tokens in faucet')) {
+          errorMsg = 'The faucet is out of tokens. Please try again later.'
+        } else if (error.message.includes('user rejected transaction')) {
+          errorMsg = 'Transaction was rejected by the user.'
+        }
+      }
+      
+      setErrorMessage(errorMsg)
+      toast.error('Failed to claim tokens', {
+        description: errorMsg
       })
     } finally {
       setIsLoading(false)
@@ -137,16 +198,10 @@ export function Faucet() {
 
   const copyAddress = (text: string) => {
     navigator.clipboard.writeText(text)
-    toast({
-      title: 'Address copied!',
-      description: 'Contract address copied to clipboard',
+    toast.success('Address copied!', {
+      description: 'Contract address copied to clipboard'
     })
   }
-
-  // Fetch token balance on component mount
-  useState(() => {
-    fetchTokenBalance()
-  })
 
   return (
     <>
@@ -199,44 +254,49 @@ export function Faucet() {
                   </div>
                 )}
 
-                <div className="mt-6">
-                  <label
-                    htmlFor="address"
-                    className="text-sm font-medium block mb-2"
-                  >
-                    Your wallet address
-                  </label>
-                  <div className="relative">
-                    <Input
-                      id="address"
-                      placeholder="0x..."
-                      value={address}
-                      onChange={handleAddressChange}
-                      className={
-                        !isValidAddress
-                          ? 'border-red-500 focus-visible:ring-red-500'
-                          : ''
-                      }
-                    />
-                    {!isValidAddress && address && (
-                      <div className="absolute right-2 top-1/2 -translate-y-1/2 text-red-500">
-                        <AlertCircle className="h-4 w-4" />
-                      </div>
-                    )}
+                {claimDetails.amount !== '0' && (
+                  <div className="text-sm flex justify-between items-center py-2">
+                    <span className="text-muted-foreground">
+                      Claim amount:
+                    </span>
+                    <span className="font-medium">{claimDetails.amount} PKMB</span>
                   </div>
-                  {!isValidAddress && address && (
-                    <p className="text-red-500 text-xs mt-1">
-                      Please enter a valid Ethereum address
+                )}
+
+                {account && claimDetails.timeLeft > 0 && (
+                  <div className="mt-3 p-2 bg-yellow-500/10 border border-yellow-500/20 rounded-md text-center">
+                    <p className="text-sm text-yellow-500">
+                      Next claim available in: {formatTimeLeft(claimDetails.timeLeft)}
                     </p>
-                  )}
-                </div>
+                  </div>
+                )}
+
+                {!isConnected && (
+                  <div className="mt-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-md text-center">
+                    <p className="text-sm text-blue-500">
+                      Connect your wallet to claim tokens
+                    </p>
+                  </div>
+                )}
 
                 {transactionStatus === 'success' && (
                   <Alert className="bg-green-500/10 text-green-500 border-green-500/20">
                     <CheckCircle2 className="h-4 w-4" />
                     <AlertTitle>Success!</AlertTitle>
-                    <AlertDescription>
-                      Tokens have been sent to your wallet.
+                    <AlertDescription className="space-y-2">
+                      <p>Tokens have been sent to your wallet.</p>
+                      {txHash && (
+                        <div className="text-xs mt-1">
+                          <a 
+                            href={`https://sepolia.etherscan.io/tx/${txHash}`} 
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline hover:text-green-400"
+                          >
+                            View transaction on Etherscan
+                          </a>
+                        </div>
+                      )}
                     </AlertDescription>
                   </Alert>
                 )}
@@ -246,7 +306,7 @@ export function Faucet() {
                     <AlertCircle className="h-4 w-4" />
                     <AlertTitle>Error</AlertTitle>
                     <AlertDescription>
-                      Failed to claim tokens. Please try again later.
+                      {errorMessage}
                     </AlertDescription>
                   </Alert>
                 )}
@@ -256,13 +316,17 @@ export function Faucet() {
                 <Button
                   className="w-full"
                   onClick={handleClaim}
-                  disabled={isLoading || !address || !isValidAddress}
+                  disabled={isLoading || (isConnected && !claimDetails.canClaim)}
                 >
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Processing...
                     </>
+                  ) : !isConnected ? (
+                    'Connect Wallet'
+                  ) : !claimDetails.canClaim && claimDetails.timeLeft > 0 ? (
+                    'Waiting for Cooldown'
                   ) : (
                     'Claim PKMB Tokens'
                   )}
@@ -272,7 +336,7 @@ export function Faucet() {
 
             <div className="mt-6 text-center text-sm text-muted-foreground">
               <p>Use this faucet for testnet purposes only.</p>
-              <p className="mt-1">Limited to one request per wallet.</p>
+              <p className="mt-1">One claim per address every {formatTimeLeft(claimDetails.timeLeft > 0 ? claimDetails.timeLeft : 86400)} (default: 24h).</p>
             </div>
           </motion.div>
         </div>
