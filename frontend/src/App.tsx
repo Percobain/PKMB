@@ -3,9 +3,13 @@ import AppRoutes from '@/router/routes'
 import { CommandMenu } from '@/components/CommandMenu'
 import { Toaster } from '@/components/ui/sonner'
 import { ThemeProvider } from '@/components/theme-provider'
+import Clarity from '@microsoft/clarity'
 
 function App() {
-  return (    <ThemeProvider>
+  const projectId = 'rhb9flobls'
+  Clarity.init(projectId)
+  return (
+    <ThemeProvider>
       <Router>
         <CommandMenu />
         <AppRoutes />
