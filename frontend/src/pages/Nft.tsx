@@ -82,6 +82,15 @@ export function Nft() {
   const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0]
+
+      const fileSizeInMB = file.size / (1024 * 1024)
+      if (fileSizeInMB > 5) {
+        toast.error('File too large', {
+          description: 'Please select an image under 5MB'
+        })
+        return
+      }
+      
       setUploadedFile(file)
 
       const reader = new FileReader()
@@ -104,6 +113,15 @@ export function Nft() {
       if (items[i].type.indexOf('image') !== -1) {
         const file = items[i].getAsFile();
         if (file) {
+          // Check file size (5MB limit)
+          const fileSizeInMB = file.size / (1024 * 1024)
+          if (fileSizeInMB > 5) {
+            toast.error('File too large', {
+              description: 'Pasted image must be under 5MB'
+            })
+            return
+          }
+          
           setUploadedFile(file);
           
           const reader = new FileReader();
@@ -371,8 +389,11 @@ export function Nft() {
                           <p className="text-sm text-muted-foreground mb-1">
                             Click to upload your image (JPG, PNG)
                           </p>
-                          <p className="text-xs text-muted-foreground mb-4">
+                          <p className="text-xs text-muted-foreground mb-1">
                             Or paste from clipboard (Ctrl+V)
+                          </p>
+                          <p className="text-xs text-muted-foreground mb-4">
+                            Max file size: 5MB
                           </p>
                           <Button
                             variant="outline"
