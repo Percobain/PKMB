@@ -95,6 +95,31 @@ export function Nft() {
     }
   }
 
+  const handlePaste = (event: React.ClipboardEvent) => {
+    const items = event.clipboardData?.items;
+    
+    if (!items) return;
+    
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const file = items[i].getAsFile();
+        if (file) {
+          setUploadedFile(file);
+          
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            if (e.target?.result) {
+              setPreviewImage(e.target.result as string);
+              setProcessedImage(null);
+            }
+          };
+          reader.readAsDataURL(file);
+          break;
+        }
+      }
+    }
+  };
+
   const processImage = async () => {
     if (!previewImage) return
 
@@ -288,251 +313,318 @@ export function Nft() {
   }
 
   return (
-    <>
+    <div className="min-h-screen">
       <Navbar />
-      <AuroraBackground animate={true} speed={2}>
-        <div className="container mx-auto px-4 py-16">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="max-w-3xl mx-auto"
-          >
-            {mintingStep === 'editing' && (
-              <Card className="bg-background/80 backdrop-blur-sm border-2 shadow-xl">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    Choose Your Image Source
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Tabs
-                    defaultValue={activeTab}
-                    onValueChange={(value) => setActiveTab(value)}
-                    className="w-full"
-                  >
-                    <TabsList className="grid grid-cols-1 mb-4">
-                      <TabsTrigger value="upload">Upload Image</TabsTrigger>
-                    </TabsList>
+      <AuroraBackground animate={true} speed={2} className="fixed inset-0 -z-10" />
+      
+      <div className="container mx-auto px-4 py-8 pt-24 relative z-10 mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="max-w-3xl mx-auto"
+        >
+          {mintingStep === 'editing' && (
+            <Card className="bg-background/80 backdrop-blur-sm border-2 shadow-xl mb-8">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  Choose Your Image Source
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Tabs
+                  defaultValue={activeTab}
+                  onValueChange={(value) => setActiveTab(value)}
+                  className="w-full"
+                >
+                  <TabsList className="grid grid-cols-1 mb-4">
+                    <TabsTrigger value="upload">Upload Image</TabsTrigger>
+                  </TabsList>
 
-                    <TabsContent value="upload" className="space-y-4">
-                      <div className="flex flex-col items-center justify-center border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
-                        {previewImage ? (
-                          <div className="w-full">
-                            <img
-                              src={previewImage}
-                              alt="Preview"
-                              className="max-h-64 mx-auto object-contain rounded-lg"
-                            />
-                            <Button
-                              variant="outline"
-                              className="mt-4 w-full"
-                              onClick={() => {
-                                setPreviewImage(null)
-                                setUploadedFile(null)
-                              }}
-                            >
-                              Remove Image
-                            </Button>
-                          </div>
-                        ) : (
-                          <>
-                            <Upload className="h-10 w-10 text-muted-foreground mb-2" />
-                            <p className="text-sm text-muted-foreground mb-4">
-                              Click to upload your image (JPG, PNG)
-                            </p>
-                            <Button
-                              variant="outline"
-                              onClick={() => fileInputRef.current?.click()}
-                            >
-                              Select Image
-                            </Button>
-                            <input
-                              type="file"
-                              ref={fileInputRef}
-                              className="hidden"
-                              accept="image/png, image/jpeg"
-                              onChange={handleFileUpload}
-                            />
-                          </>
-                        )}
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-
-                  <Separator className="my-6" />
-
-                  <div className="space-y-4 pt-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">
-                        NFT Name <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="name"
-                        placeholder="My Indian Pride NFT"
-                        value={nftName}
-                        onChange={(e) => setNftName(e.target.value)}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="description">
-                        Description (optional)
-                      </Label>
-                      <Input
-                        id="description"
-                        placeholder="A description of your NFT"
-                        value={nftDescription}
-                        onChange={(e) => setNftDescription(e.target.value)}
-                      />
-                    </div>
-
-                    <div className="space-y-2 mt-4">
-                      <Label>Processing Mode</Label>
-                      <RadioGroup
-                        value={processingMode}
-                        onValueChange={(value) =>
-                          setProcessingMode(value as 'normal' | 'desi')
-                        }
-                        className="flex space-x-4"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="normal" id="normal" />
-                          <Label htmlFor="normal">Normal Mode</Label>
+                  <TabsContent value="upload" className="space-y-4">
+                    <div 
+                      className="flex flex-col items-center justify-center border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center"
+                      onPaste={handlePaste}
+                      tabIndex={0}
+                    >
+                      {previewImage ? (
+                        <div className="w-full">
+                          <img
+                            src={previewImage}
+                            alt="Preview"
+                            className="max-h-64 mx-auto object-contain rounded-lg"
+                          />
+                          <Button
+                            variant="outline"
+                            className="mt-4 w-full"
+                            onClick={() => {
+                              setPreviewImage(null)
+                              setUploadedFile(null)
+                            }}
+                          >
+                            Remove Image
+                          </Button>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="savage" id="savage" />
-                          <Label htmlFor="savage">Desi Mode</Label>
-                        </div>
-                      </RadioGroup>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {processingMode === 'normal'
-                          ? 'Normal Mode is your badge of being a true Hindustani.'
-                          : 'Desi mode shows them who the real daddy is.'}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-
-                <CardFooter>
-                  <Button
-                    className="w-full"
-                    disabled={!previewImage || !nftName || isLoading}
-                    onClick={processImage}
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : processingMode === 'normal' ? (
-                      'Preview with Indian Flag'
-                    ) : (
-                      'Preview in Desi Mode'
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
-            )}
-
-            {mintingStep === 'preview' && (
-              <Card className="bg-background/80 backdrop-blur-sm border-2 shadow-xl">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    Preview Your NFT
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col items-center space-y-6">
-                    <div className="border rounded-lg p-4 w-full max-w-md">
-                      {processedImage && (
-                        <img
-                          src={processedImage}
-                          alt="NFT Preview"
-                          className="w-full object-contain rounded-lg"
-                        />
-                      )}
-                    </div>
-
-                    <div className="space-y-3 w-full">
-                      <div>
-                        <Label className="text-sm opacity-70">Name</Label>
-                        <div className="text-lg font-bold">{nftName}</div>
-                      </div>
-
-                      {nftDescription && (
-                        <div>
-                          <Label className="text-sm opacity-70">
-                            Description
-                          </Label>
-                          <div>{nftDescription}</div>
-                        </div>
-                      )}
-
-                      <div>
-                        <Label className="text-sm opacity-70">Style</Label>
-                        <div className="font-medium">
-                          {processingMode === 'normal'
-                            ? 'Normal Mode'
-                            : 'Desi Mode'}
-                        </div>
-                      </div>
-
-                      <div className="bg-primary/10 p-3 rounded-md flex items-start space-x-3">
-                        <Info size={18} className="text-primary mt-0.5" />
-                        <div>
-                          <p className="text-sm">
-                            Minting will cost{' '}
-                            <span className="font-bold">10 PKMB</span> tokens.
-                            Make sure you have enough tokens in your wallet.
+                      ) : (
+                        <>
+                          <Upload className="h-10 w-10 text-muted-foreground mb-2" />
+                          <p className="text-sm text-muted-foreground mb-1">
+                            Click to upload your image (JPG, PNG)
                           </p>
-                        </div>
+                          <p className="text-xs text-muted-foreground mb-4">
+                            Or paste from clipboard (Ctrl+V)
+                          </p>
+                          <Button
+                            variant="outline"
+                            onClick={() => fileInputRef.current?.click()}
+                          >
+                            Select Image
+                          </Button>
+                          <input
+                            type="file"
+                            ref={fileInputRef}
+                            className="hidden"
+                            accept="image/png, image/jpeg"
+                            onChange={handleFileUpload}
+                          />
+                        </>
+                      )}
+                    </div>
+                  </TabsContent>
+                </Tabs>
+
+                <Separator className="my-6" />
+
+                <div className="space-y-4 pt-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">
+                      NFT Name <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="name"
+                      placeholder="My Indian Pride NFT"
+                      value={nftName}
+                      onChange={(e) => setNftName(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="description">
+                      Description (optional)
+                    </Label>
+                    <Input
+                      id="description"
+                      placeholder="A description of your NFT"
+                      value={nftDescription}
+                      onChange={(e) => setNftDescription(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2 mt-4">
+                    <Label>Processing Mode</Label>
+                    <RadioGroup
+                      value={processingMode}
+                      onValueChange={(value) =>
+                        setProcessingMode(value as 'normal' | 'desi')
+                      }
+                      className="flex space-x-4"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="normal" id="normal" />
+                        <Label htmlFor="normal">Normal Mode</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="savage" id="savage" />
+                        <Label htmlFor="savage">Desi Mode</Label>
+                      </div>
+                    </RadioGroup>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {processingMode === 'normal'
+                        ? 'Normal Mode is your badge of being a true Hindustani.'
+                        : 'Desi mode shows them who the real daddy is.'}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+
+              <CardFooter>
+                <Button
+                  className="w-full"
+                  disabled={!previewImage || !nftName || isLoading}
+                  onClick={processImage}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : processingMode === 'normal' ? (
+                    'Preview with Indian Flag'
+                  ) : (
+                    'Preview in Desi Mode'
+                  )}
+                </Button>
+              </CardFooter>
+            </Card>
+          )}
+
+          {mintingStep === 'preview' && (
+            <Card className="bg-background/80 backdrop-blur-sm border-2 shadow-xl mb-8">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  Preview Your NFT
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col items-center space-y-6">
+                  <div className="border rounded-lg p-4 w-full max-w-md">
+                    {processedImage && (
+                      <img
+                        src={processedImage}
+                        alt="NFT Preview"
+                        className="w-full object-contain rounded-lg"
+                      />
+                    )}
+                  </div>
+
+                  <div className="space-y-3 w-full">
+                    <div>
+                      <Label className="text-sm opacity-70">Name</Label>
+                      <div className="text-lg font-bold">{nftName}</div>
+                    </div>
+
+                    {nftDescription && (
+                      <div>
+                        <Label className="text-sm opacity-70">
+                          Description
+                        </Label>
+                        <div>{nftDescription}</div>
+                      </div>
+                    )}
+
+                    <div>
+                      <Label className="text-sm opacity-70">Style</Label>
+                      <div className="font-medium">
+                        {processingMode === 'normal'
+                          ? 'Normal Mode'
+                          : 'Desi Mode'}
+                      </div>
+                    </div>
+
+                    <div className="bg-primary/10 p-3 rounded-md flex items-start space-x-3">
+                      <Info size={18} className="text-primary mt-0.5" />
+                      <div>
+                        <p className="text-sm">
+                          Minting will cost{' '}
+                          <span className="font-bold">10 PKMB</span> tokens.
+                          Make sure you have enough tokens in your wallet.
+                        </p>
                       </div>
                     </div>
                   </div>
-                </CardContent>
+                </div>
+              </CardContent>
 
-                <CardFooter className="flex flex-col sm:flex-row gap-2">
-                  <Button
-                    variant="outline"
-                    className="sm:flex-1"
-                    onClick={() => setMintingStep('editing')}
-                  >
-                    Go Back
-                  </Button>
-                  <Button
-                    className="sm:flex-1"
-                    disabled={isLoading}
-                    onClick={mintNFT}
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Minting...
-                      </>
-                    ) : (
-                      'Mint NFT'
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
-            )}
+              <CardFooter className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  variant="outline"
+                  className="sm:flex-1"
+                  onClick={() => setMintingStep('editing')}
+                >
+                  Go Back
+                </Button>
+                <Button
+                  className="sm:flex-1"
+                  disabled={isLoading}
+                  onClick={mintNFT}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Minting...
+                    </>
+                  ) : (
+                    'Mint NFT'
+                  )}
+                </Button>
+              </CardFooter>
+            </Card>
+          )}
 
-            {mintingStep === 'minting' && (
-              <Card className="bg-background/80 backdrop-blur-sm border-2 shadow-xl">
-                <CardHeader>
-                  <CardTitle className="text-center">
-                    Minting Your NFT
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col items-center justify-center p-8 text-center space-y-4">
-                    <Loader2 className="h-16 w-16 animate-spin text-primary" />
-                    <h3 className="text-xl font-medium mt-4">
-                      Transaction in Progress
+          {mintingStep === 'minting' && (
+            <Card className="bg-background/80 backdrop-blur-sm border-2 shadow-xl mb-8">
+              <CardHeader>
+                <CardTitle className="text-center">
+                  Minting Your NFT
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col items-center justify-center p-8 text-center space-y-4">
+                  <Loader2 className="h-16 w-16 animate-spin text-primary" />
+                  <h3 className="text-xl font-medium mt-4">
+                    Transaction in Progress
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Please wait while your NFT is being minted...
+                  </p>
+
+                  {txHash && (
+                    <a
+                      href={`https://sepolia.etherscan.io/tx/${txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-blue-500 hover:text-blue-600 underline"
+                    >
+                      View transaction on Etherscan
+                    </a>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {mintingStep === 'success' && (
+            <Card className="bg-background/80 backdrop-blur-sm border-2 shadow-xl mb-8">
+              <CardHeader>
+                <CardTitle className="text-center text-green-500">
+                  NFT Minted Successfully!
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col items-center justify-center p-4 text-center space-y-6">
+                  {(mintedShareData?.imageGatewayUrl || processedImage) && (
+                    <div className="border rounded-lg p-4 max-w-md">
+                      <img
+                        src={
+                          mintedShareData?.imageGatewayUrl || processedImage!
+                        }
+                        alt="Minted NFT"
+                        className="max-h-64 mx-auto object-contain rounded-lg"
+                      />
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-medium">
+                      {mintedShareData?.nftName || nftName}
                     </h3>
-                    <p className="text-muted-foreground">
-                      Please wait while your NFT is being minted...
+                    {nftDescription && (
+                      <p className="text-muted-foreground">
+                        {nftDescription}
+                      </p>
+                    )}
+
+                    <p className="text-sm">
+                      Token ID: <span className="font-mono">{tokenId}</span>
+                    </p>
+
+                    <p className="text-sm">
+                      Style:{' '}
+                      <span className="font-medium">
+                        {processingMode === 'normal'
+                          ? 'Normal Mode'
+                          : 'Desi Mode'}
+                      </span>
                     </p>
 
                     {txHash && (
@@ -540,106 +632,46 @@ export function Nft() {
                         href={`https://sepolia.etherscan.io/tx/${txHash}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-blue-500 hover:text-blue-600 underline"
+                        className="block text-sm text-blue-500 hover:text-blue-600 underline"
                       >
                         View transaction on Etherscan
                       </a>
                     )}
                   </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {mintingStep === 'success' && (
-              <Card className="bg-background/80 backdrop-blur-sm border-2 shadow-xl">
-                <CardHeader>
-                  <CardTitle className="text-center text-green-500">
-                    NFT Minted Successfully!
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col items-center justify-center p-4 text-center space-y-6">
-                    {(mintedShareData?.imageGatewayUrl || processedImage) && (
-                      <div className="border rounded-lg p-4 max-w-md">
-                        <img
-                          src={
-                            mintedShareData?.imageGatewayUrl || processedImage!
-                          }
-                          alt="Minted NFT"
-                          className="max-h-64 mx-auto object-contain rounded-lg"
-                        />
-                      </div>
-                    )}
-
-                    <div className="space-y-2">
-                      <h3 className="text-xl font-medium">
-                        {mintedShareData?.nftName || nftName}
-                      </h3>
-                      {nftDescription && (
-                        <p className="text-muted-foreground">
-                          {nftDescription}
-                        </p>
-                      )}
-
-                      <p className="text-sm">
-                        Token ID: <span className="font-mono">{tokenId}</span>
-                      </p>
-
-                      <p className="text-sm">
-                        Style:{' '}
-                        <span className="font-medium">
-                          {processingMode === 'normal'
-                            ? 'Normal Mode'
-                            : 'Desi Mode'}
-                        </span>
-                      </p>
-
-                      {txHash && (
-                        <a
-                          href={`https://sepolia.etherscan.io/tx/${txHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block text-sm text-blue-500 hover:text-blue-600 underline"
-                        >
-                          View transaction on Etherscan
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex flex-col sm:flex-row gap-2">
-                  <Button
-                    variant="outline"
-                    className="sm:flex-1"
-                    onClick={() => {
-                      setNftName('')
-                      setNftDescription('')
-                      setPreviewImage(null)
-                      setPreviewImage(null)
-                      setProcessedImage(null)
-                      setUploadedFile(null)
-                      setProcessingMode('normal')
-                      setMintingStep('editing')
-                      setTxHash(null)
-                      setMintedShareData(null)
-                    }}
-                  >
-                    Create Another NFT
-                  </Button>
-                  <Button
-                    className="sm:flex-1"
-                    onClick={() => setShowShareDialog(true)}
-                    disabled={!mintedShareData}
-                  >
-                    <Share2 className="mr-2 h-4 w-4" />
-                    Share NFT
-                  </Button>
-                </CardFooter>
-              </Card>
-            )}
-          </motion.div>
-        </div>
-      </AuroraBackground>
+                </div>
+              </CardContent>
+              <CardFooter className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  variant="outline"
+                  className="sm:flex-1"
+                  onClick={() => {
+                    setNftName('')
+                    setNftDescription('')
+                    setPreviewImage(null)
+                    setPreviewImage(null)
+                    setProcessedImage(null)
+                    setUploadedFile(null)
+                    setProcessingMode('normal')
+                    setMintingStep('editing')
+                    setTxHash(null)
+                    setMintedShareData(null)
+                  }}
+                >
+                  Create Another NFT
+                </Button>
+                <Button
+                  className="sm:flex-1"
+                  onClick={() => setShowShareDialog(true)}
+                  disabled={!mintedShareData}
+                >
+                  <Share2 className="mr-2 h-4 w-4" />
+                  Share NFT
+                </Button>
+              </CardFooter>
+            </Card>
+          )}
+        </motion.div>
+      </div>
 
       <AlertDialog open={showShareDialog} onOpenChange={setShowShareDialog}>
         <AlertDialogContent>
@@ -680,6 +712,6 @@ export function Nft() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   )
 }
