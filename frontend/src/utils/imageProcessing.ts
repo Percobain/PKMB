@@ -42,10 +42,13 @@ export async function addIndianFlagOverlay(imageUrl: string): Promise<Blob> {
     ctx.drawImage(mainImage, 0, 0)
 
     // Draw the flag in the bottom right corner with a small margin
-    const marginRight = 20
-    const marginBottom = 20
-    const flagWidth = 160
-    const flagHeight = 80
+    const marginRight = 10
+    const marginBottom = 10
+    
+    // Scale flag size based on image dimensions
+    const isSmallImage = (canvas.width < 300 || canvas.height < 300)
+    const flagWidth = isSmallImage ? Math.min(canvas.width * 0.25, 50) : 160
+    const flagHeight = isSmallImage ? Math.min(canvas.height * 0.20, 30) : 80
     
     ctx.drawImage(
       flagImage,
@@ -114,20 +117,24 @@ export async function normalModeProcessing(imageUrl: string): Promise<Blob> {
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
     // Determine flag size based on image dimensions
-    // If image is larger than 1000px in either dimension, increase flag size
+    const isSmallImage = (canvas.width < 300 || canvas.height < 300)
     const isLargeImage = (canvas.width > 1000 || canvas.height > 1000)
     
     // Set flag dimensions based on image size
-    const marginRight = 20
-    const marginBottom = 20
+    const marginRight = isSmallImage ? 8 : 20
+    const marginBottom = isSmallImage ? 8 : 20
     let flagWidth, flagHeight
     
-    if (isLargeImage) {
+    if (isSmallImage) {
+      // Very small flag for small images
+      flagWidth = Math.min(canvas.width * 0.20, 40)
+      flagHeight = flagWidth * 0.5 // Maintain aspect ratio
+    } else if (isLargeImage) {
       // Larger flag for large images
       flagWidth = Math.min(canvas.width * 0.3, 300) // 30% of width, max 300px
       flagHeight = flagWidth * 0.6 // Maintain aspect ratio
     } else {
-      // Default size for smaller images
+      // Default size for medium images
       flagWidth = 100
       flagHeight = 80
     }
@@ -143,7 +150,7 @@ export async function normalModeProcessing(imageUrl: string): Promise<Blob> {
     
     // Add a subtle border to the flag for better visibility if needed
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)'
-    ctx.lineWidth = 1
+    ctx.lineWidth = isSmallImage ? 0.5 : 1
     ctx.strokeRect(
       canvas.width - flagWidth - marginRight,
       canvas.height - flagHeight - marginBottom,
@@ -170,7 +177,6 @@ export async function normalModeProcessing(imageUrl: string): Promise<Blob> {
     throw error
   }
 }
-
 
 /**
  * Processes an image in "Savage Mode" with elements on bottom left, bottom right and text at the top
@@ -202,13 +208,21 @@ export async function savageModeProcessing(imageUrl: string): Promise<Blob> {
     // Draw the main image
     ctx.drawImage(mainImage, 0, 0)
 
-    // Determine if image is large (>1000px in any dimension)
+    // Determine image size category
+    const isSmallImage = (canvas.width < 300 || canvas.height < 300)
     const isLargeImage = (canvas.width > 1000 || canvas.height > 1000)
     
     // Calculate dimensions for Modi and Virat images based on image size
     let modiWidth, modiHeight, viratWidth, viratHeight
     
-    if (isLargeImage) {
+    if (isSmallImage) {
+      // Much smaller overlays for tiny images
+      modiWidth = Math.min(canvas.width * 0.30, 80)
+      modiHeight = Math.min(canvas.height * 0.35, 90) 
+      
+      viratWidth = Math.min(canvas.width * 0.30, 80)
+      viratHeight = Math.min(canvas.height * 0.35, 90)
+    } else if (isLargeImage) {
       // Larger images get larger overlays
       modiWidth = Math.min(canvas.width * 0.35, 1450) 
       modiHeight = Math.min(canvas.height * 0.6, 1600)
@@ -216,7 +230,7 @@ export async function savageModeProcessing(imageUrl: string): Promise<Blob> {
       viratWidth = Math.min(canvas.width * 0.35, 1450)
       viratHeight = Math.min(canvas.height * 0.6, 1600)
     } else {
-      // Default size for smaller images
+      // Default size for medium images
       modiWidth = Math.min(canvas.width * 0.35, 300)
       modiHeight = Math.min(canvas.height * 0.5, 350)
       
@@ -225,7 +239,7 @@ export async function savageModeProcessing(imageUrl: string): Promise<Blob> {
     }
     
     // Add margin above Modi by positioning him lower (closer to bottom)
-    const marginAboveModi = Math.floor(canvas.height * 0.1) // 10% margin above Modi
+    const marginAboveModi = Math.floor(canvas.height * (isSmallImage ? 0.05 : 0.1)) // Smaller margin for small images
     
     // Position Modi image at the bottom-left corner with margin above
     ctx.drawImage(
@@ -251,25 +265,30 @@ export async function savageModeProcessing(imageUrl: string): Promise<Blob> {
     // Set up text style with more impact
     ctx.fillStyle = 'white'
     ctx.strokeStyle = 'black'
-    ctx.lineWidth = 3 // Thicker outline for better visibility
+    ctx.lineWidth = isSmallImage ? 1 : 3 // Thinner outline for small images
     
-    // Adjust font size based on canvas width and the large image flag
-    const fontSize = isLargeImage 
-      ? Math.max(Math.min(canvas.width * 0.07, 64), 132) // Larger font for large images
-      : Math.max(Math.min(canvas.width * 0.06, 48), 24) // Default font size
+    // Adjust font size based on canvas width and image size
+    let fontSize
+    if (isSmallImage) {
+      fontSize = Math.max(Math.min(canvas.width * 0.05, 14), 8) // Much smaller font for tiny images
+    } else if (isLargeImage) {
+      fontSize = Math.max(Math.min(canvas.width * 0.07, 64), 20) // Larger font for large images
+    } else {
+      fontSize = Math.max(Math.min(canvas.width * 0.06, 48), 16) // Default font size
+    }
       
     ctx.font = `bold ${fontSize}px Arial`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'top'
     
-    // Create text with outline for better visibility
-    const textY = canvas.height * 0.05 // Position at 5% from the top
+    // Position text closer to top for small images
+    const textY = canvas.height * (isSmallImage ? 0.03 : 0.05) 
     
     // Add a semi-transparent background behind the text for better readability
     const textMetrics = ctx.measureText(text)
     const textWidth = textMetrics.width
     const textHeight = fontSize * 1.2
-    const textBgPadding = isLargeImage ? 15 : 10 // Larger padding for large images
+    const textBgPadding = isSmallImage ? 4 : (isLargeImage ? 15 : 10) // Adjust padding based on image size
     
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
     ctx.fillRect(
@@ -303,7 +322,6 @@ export async function savageModeProcessing(imageUrl: string): Promise<Blob> {
     throw error
   }
 }
-
 
 /**
  * Fetch Twitter profile image by username
