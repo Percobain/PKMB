@@ -5,6 +5,7 @@ import { Navbar } from '@/components/Navbar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { LucideChevronRight, Droplets, PaintBucket, Grid } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 export function Landing() {
   const navigate = useNavigate()
@@ -20,7 +21,6 @@ export function Landing() {
       >
         <div className="container mx-auto max-w-6xl px-4 flex flex-col items-center justify-between h-[90vh]">
           <div className="flex-grow"></div>{' '}
-          {/* Spacer to push content down from top */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
@@ -60,25 +60,20 @@ export function Landing() {
               from a country that can land on the moon... while others can't
               even land a loan.
             </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.2 }}
-            >
-              <Button
-                size="lg"
-                onClick={() => navigate('/faucet')}
-                className="text-lg px-8 py-6 bg-gradient-to-r from-orange-500 via-white to-green-500 hover:from-orange-600 hover:via-white hover:to-green-600 text-black font-bold transition-all shadow-lg hover:shadow-xl cursor-pointer"
-              >
-                Get your $PKMB now
-                <LucideChevronRight className="ml-2 h-5 w-5" />
-              </Button>
-            </motion.div>
           </motion.div>
+
+          <div className="mt-12 mb-12 z-10 relative">
+            <Button
+              size="lg"
+              onClick={() => navigate('/faucet')}
+              className="group text-lg px-8 py-6 bg-gradient-to-r from-orange-500 via-white to-green-500 hover:from-orange-600 hover:via-white hover:to-green-600 text-black font-bold transition-all shadow-lg hover:shadow-xl cursor-pointer"
+            >
+              Get your $PKMB now
+              <LucideChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </div>
+          
           <div className="flex-grow"></div>{' '}
-          {/* Spacer for vertical centering */}
-          {/* News Ticker - Marquee Style */}
           <motion.div
             className="relative overflow-hidden w-full py-3 bg-black/30 backdrop-blur-sm rounded-lg border border-white/10 text-white"
             initial={{ opacity: 0 }}
@@ -91,7 +86,7 @@ export function Landing() {
                 initial={{ x: '30%' }}
                 animate={{ x: '-100%' }}
                 transition={{
-                  duration: 60, // Increased duration to 60 seconds (was 40)
+                  duration: 60,
                   repeat: Infinity,
                   ease: 'linear',
                   repeatType: 'loop',
@@ -115,9 +110,22 @@ export function Landing() {
         </div>
       </AuroraBackground>
 
-      {/* Rest of the page with black background */}
-      <div className="bg-black min-h-screen">
-        <div className="container mx-auto max-w-6xl px-4 py-16">
+      {/* Dots Background with Features */}
+      <div className="relative flex flex-col min-h-screen w-full items-center justify-center bg-white dark:bg-black">
+        {/* Dots Background */}
+        <div
+          className={cn(
+            "absolute inset-0",
+            "[background-size:20px_20px]",
+            "[background-image:radial-gradient(#d4d4d4_1px,transparent_1px)]",
+            "dark:[background-image:radial-gradient(#404040_1px,transparent_1px)]",
+          )}
+        />
+        {/* Radial gradient for the container to give a faded look */}
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)] dark:bg-black"></div>
+        
+        {/* Content over the dots */}
+        <div className="container relative z-10 mx-auto max-w-6xl px-4 py-24">
           {/* Features Section */}
           <motion.div
             className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16"
@@ -135,36 +143,29 @@ export function Landing() {
             viewport={{ once: true }}
           >
             {/* Faucet Feature */}
-            <motion.div
-              variants={{
-                hidden: { opacity: 0, y: 20 },
-                show: { opacity: 1, y: 0 },
-              }}
-            >
-              <Card className="bg-black/30 backdrop-blur-sm border-white/10 hover:border-orange-500/50 transition-all overflow-hidden group h-full">
-                <CardContent className="p-8 flex flex-col items-center text-center h-full">
-                  <div className="mb-6 p-4 rounded-full bg-orange-500/10 text-orange-500 group-hover:scale-110 transition-transform">
-                    <Droplets size={40} />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-3 group-hover:text-orange-500 transition-colors">
-                    🚰 Faucet
-                  </h3>
-                  <p className="text-muted-foreground mb-6">
-                    Claim $PKMB <br /> while they're stuck in economic crisis.
-                  </p>
-                  <div className="mt-auto">
-                    <Button
-                      variant="outline"
-                      onClick={() => navigate('/faucet')}
-                      className="border-orange-500/50 text-orange-400 hover:bg-orange-500/10"
-                    >
-                      Visit Faucet
-                      <LucideChevronRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+            <Card className="bg-black/30 backdrop-blur-sm border-white/10 hover:border-orange-500/50 transition-all overflow-hidden group h-full">
+              <CardContent className="p-8 flex flex-col items-center text-center h-full">
+                <div className="mb-6 p-4 rounded-full bg-orange-500/10 text-orange-500 group-hover:scale-110 transition-transform">
+                  <Droplets size={40} />
+                </div>
+                <h3 className="text-2xl font-bold mb-3 group-hover:text-orange-500 transition-colors">
+                  🚰 Faucet
+                </h3>
+                <p className="text-muted-foreground mb-6">
+                  Claim $PKMB <br /> while they're stuck in economic crisis.
+                </p>
+                <div className="mt-auto">
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate('/faucet')}
+                    className="border-orange-500/50 text-orange-400 hover:bg-orange-500/20 hover:text-orange-300 hover:border-orange-400 transition-all duration-300 group-hover:shadow-[0_0_15px_rgba(249,115,22,0.3)]"
+                  >
+                    Visit Faucet
+                    <LucideChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* NFT Mint Feature */}
             <motion.div
@@ -189,10 +190,10 @@ export function Landing() {
                     <Button
                       variant="outline"
                       onClick={() => navigate('/mint')}
-                      className="border-green-500/50 text-green-400 hover:bg-green-500/10"
+                      className="border-green-500/50 text-green-400 hover:bg-green-500/20 hover:text-green-300 hover:border-green-400 transition-all duration-300 group-hover:shadow-[0_0_15px_rgba(34,197,94,0.3)]"
                     >
                       Mint NFTs
-                      <LucideChevronRight className="ml-2 h-4 w-4" />
+                      <LucideChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </Button>
                   </div>
                 </CardContent>
@@ -222,10 +223,10 @@ export function Landing() {
                     <Button
                       variant="outline"
                       onClick={() => navigate('/my-nfts')}
-                      className="border-blue-500/50 text-blue-400 hover:bg-blue-500/10"
+                      className="border-blue-500/50 text-blue-400 hover:bg-blue-500/20 hover:text-blue-300 hover:border-blue-400 transition-all duration-300 group-hover:shadow-[0_0_15px_rgba(59,130,246,0.3)]"
                     >
                       View Collections
-                      <LucideChevronRight className="ml-2 h-4 w-4" />
+                      <LucideChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </Button>
                   </div>
                 </CardContent>
@@ -283,7 +284,7 @@ export function Landing() {
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="border-t border-white/10 py-6 mt-10"
+          className="relative z-10 w-full border-t border-white/10 py-6 mt-10"
         >
           <div className="container mx-auto text-center text-sm text-muted-foreground">
             <p>Made with spice 🇮🇳 | 100% Satire | Not financial advice</p>
