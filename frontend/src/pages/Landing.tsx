@@ -82,28 +82,28 @@ export function Landing() {
           >
             <div className="relative overflow-hidden w-full">
               <motion.div
-                className="inline-flex whitespace-nowrap"
-                initial={{ x: '30%' }}
-                animate={{ x: '-100%' }}
-                transition={{
-                  duration: 60,
-                  repeat: Infinity,
-                  ease: 'linear',
-                  repeatType: 'loop',
-                }}
+              className="inline-flex whitespace-nowrap"
+              initial={{ x: '30%' }}
+              animate={{ x: '-100%' }}
+              transition={{
+                duration: 30,
+                repeat: Infinity,
+                ease: 'linear',
+                repeatType: 'loop',
+              }}
               >
-                {[
-                  'Owning Pakistan since 1947 🔥',
-                  'India talks to ISRO. Pakistan listens to IMF.',
-                  'India’s GDP hits trillions. Pakistan hits rock bottom.',
-                  'We hit boundaries. They cross them illegally.',
-                  'We build tech giants. They build terrorists.',
-                  '1947 | 1965 | 1971 | 1999 | 2025'
-                ].map((item, index) => (
-                  <span key={index} className="mx-8">
-                    {item}
-                  </span>
-                ))}
+              {[
+                'Owning Pakistan since 1947 🔥',
+                'India talks to ISRO. Pakistan listens to IMF.',
+                'India’s GDP hits trillions. Pakistan hits rock bottom.',
+                'We hit boundaries. They cross them illegally.',
+                'We build tech giants. They build terrorists.',
+                '1947 | 1965 | 1971 | 1999 | 2025'
+              ].map((item, index) => (
+                <span key={index} className="mx-8">
+                {item}
+                </span>
+              ))}
               </motion.div>
             </div>
           </motion.div>
