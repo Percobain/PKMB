@@ -94,11 +94,11 @@ export function Landing() {
               >
                 {[
                   'Owning Pakistan since 1947 🔥',
-                  'We launch rockets 🚀, PK launch hashtags #',
-                  'Chand pe jhanda aur Jhande pe Chand hone mei farak hota hai',
-                  'Every time we sneeze, Pakistan catches a cold 🤧',
-                  'Trying to match India with borrowed WiFi and pirated dreams.',
-                  'Chand pe jaane ka soch rahe hain, tum abhi tak Kashmir mein phase ho.',
+                  'India talks to ISRO. Pakistan listens to IMF.',
+                  'India’s GDP hits trillions. Pakistan hits rock bottom',
+                  'We hit boundaries. They cross them illegaly.',
+                  'We build tech giants. They build terrorists.',
+                  '1947 | 1965 | 1971 | 1999 | 2025'
                 ].map((item, index) => (
                   <span key={index} className="mx-8">
                     {item}

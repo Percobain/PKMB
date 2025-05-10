@@ -17,8 +17,9 @@ export function Navbar() {
   return (
     <nav className="fixed top-0 w-full z-50 border-b bg-background/80 backdrop-blur-sm">
       <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="font-bold text-xl">
-          PKMB
+        <Link to="/" className="flex items-center gap-2 font-bold text-xl">
+          <img src="/favicon.png" alt="PKMB Logo" className="h-8 w-8" />
+          <span className="bg-gradient-to-r from-orange-500 via-white to-green-500 text-transparent bg-clip-text">$PKMB</span>
         </Link>
 
         {/* Desktop Navigation */}
