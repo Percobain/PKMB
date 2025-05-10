@@ -6,6 +6,7 @@ type Theme = 'dark' | 'light' | 'system'
 
 type ThemeProviderProps = {
   children: React.ReactNode
+  defaultTheme?: Theme
   storageKey?: string
 }
 
@@ -23,11 +24,11 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 
 export function ThemeProvider({
   children,
-  storageKey = 'vite-ui-theme',
   ...props
-}: ThemeProviderProps) {
-  // Always use dark theme
-  const [theme] = useState<Theme>('dark')
+}: ThemeProviderProps) {  // Always use dark theme
+  const defaultTheme = 'dark'
+  const storageKey = 'vite-ui-theme'
+  const [theme] = useState<Theme>(defaultTheme)
 
   useEffect(() => {
     const root = window.document.documentElement

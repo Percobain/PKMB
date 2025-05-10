@@ -1,4 +1,4 @@
-import { useState, useRef, ChangeEvent } from 'react'
+import { useState, useRef, ChangeEvent, useEffect } from 'react'
 import { ethers } from 'ethers'
 import { Navbar } from '@/components/Navbar'
 import { AuroraBackground } from '@/components/ui/aurora-background'
@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
-import { Loader2, Upload, Twitter, Info, Share2 } from 'lucide-react'
+import { Loader2, Upload, Twitter, Info, Share2, LinkIcon } from 'lucide-react'
 import { useMetaMask } from '@/hooks/useMetamask'
 import { pkmb721Abi } from '@/abis/pkmb721Abi'
 import { erc20Abi } from '@/abis/erc20Abi'
@@ -26,7 +26,6 @@ import {
   resolveIPFSUrl,
 } from '@/utils/uploadToIpfs'
 import {
-  addIndianFlagOverlay,
   normalModeProcessing,
   savageModeProcessing,
   fetchTwitterProfileImage,
@@ -43,20 +42,25 @@ import {
 } from '@/components/ui/alert-dialog'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 
+interface MintedShareableData {
+  imageGatewayUrl: string
+  metadataCid: string
+  nftName: string
+}
+
 export function Nft() {
-  // Wallet connection state
   const { isConnected, account, connect } = useMetaMask()
 
-  // Form inputs
   const [twitterUsername, setTwitterUsername] = useState('')
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   const [processedImage, setProcessedImage] = useState<string | null>(null)
   const [nftName, setNftName] = useState('')
   const [nftDescription, setNftDescription] = useState('')
-  const [processingMode, setProcessingMode] = useState<'normal' | 'savage'>('normal')
+  const [processingMode, setProcessingMode] = useState<'normal' | 'savage'>(
+    'normal'
+  )
 
-  // UI state
   const [activeTab, setActiveTab] = useState('upload')
   const [isLoading, setIsLoading] = useState(false)
   const [mintingStep, setMintingStep] = useState<
@@ -66,87 +70,49 @@ export function Nft() {
   const [tokenId, setTokenId] = useState<string | null>(null)
   const [showShareDialog, setShowShareDialog] = useState(false)
 
-  // File input reference
+  const [mintedShareData, setMintedShareData] =
+    useState<MintedShareableData | null>(null)
+
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Contract addresses
   const nftContractAddress =
     import.meta.env.VITE_PKMB721 || '0xE29529177242ac1C4D4C7E1c6F4Eb2eab575b955'
   const tokenContractAddress =
     import.meta.env.VITE_PKMBToken ||
     '0xEf89f9724d93b3fF5Ef65E9c8E630EA95b5E5643'
 
-  // Handle file upload
   const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0]
       setUploadedFile(file)
 
-      // Create preview
       const reader = new FileReader()
       reader.onload = (event) => {
         if (event.target?.result) {
           setPreviewImage(event.target.result as string)
-          setProcessedImage(null) // Reset processed image
+          setProcessedImage(null)
         }
       }
       reader.readAsDataURL(file)
     }
   }
 
-  // Handle Twitter username fetch
-  const handleFetchTwitterImage = async () => {
-    if (!twitterUsername.trim()) {
-      toast.error('Please enter a Twitter username')
-      return
-    }
-
-    setIsLoading(true)
-    try {
-      const imageUrl = await fetchTwitterProfileImage(twitterUsername)
-
-      if (!imageUrl) {
-        toast.error('Could not fetch profile image')
-        return
-      }
-
-      setPreviewImage(imageUrl)
-      setProcessedImage(null) // Reset processed image
-
-      // Create a file from the image URL for later processing
-      const response = await fetch(imageUrl)
-      const blob = await response.blob()
-      setUploadedFile(
-        new File([blob], `twitter_${twitterUsername}.jpg`, {
-          type: 'image/jpeg',
-        })
-      )
-    } catch (error) {
-      console.error('Error fetching Twitter image:', error)
-      toast.error('Failed to fetch profile image')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // Process image with selected mode
   const processImage = async () => {
     if (!previewImage) return
 
     setIsLoading(true)
     try {
-      let processedBlob;
-      
+      let processedBlob
+
       if (processingMode === 'normal') {
-        processedBlob = await normalModeProcessing(previewImage);
+        processedBlob = await normalModeProcessing(previewImage)
       } else {
-        processedBlob = await savageModeProcessing(previewImage);
+        processedBlob = await savageModeProcessing(previewImage)
       }
-      
+
       const processedUrl = URL.createObjectURL(processedBlob)
       setProcessedImage(processedUrl)
 
-      // Update the file with the processed image
       setUploadedFile(
         new File([processedBlob], uploadedFile?.name || 'processed_image.jpg', {
           type: 'image/jpeg',
@@ -162,7 +128,6 @@ export function Nft() {
     }
   }
 
-  // Prepare and mint NFT
   const mintNFT = async () => {
     if (!isConnected) {
       await connect()
@@ -176,6 +141,7 @@ export function Nft() {
 
     setIsLoading(true)
     setMintingStep('minting')
+    setMintedShareData(null)
 
     try {
       if (!window.ethereum) {
@@ -185,10 +151,8 @@ export function Nft() {
       const provider = new ethers.BrowserProvider(window.ethereum)
       const signer = await provider.getSigner()
 
-      // Upload image to IPFS
       const imageUploadResult = await uploadFileToIPFS(uploadedFile)
 
-      // Create metadata
       const metadata = {
         name: nftName,
         description: nftDescription || `${nftName} - An NFT with Indian pride`,
@@ -196,18 +160,21 @@ export function Nft() {
         attributes: [
           { trait_type: 'Creator', value: account },
           {
-            trait_type: 'Source',
-            value: activeTab === 'twitter' ? 'Twitter' : 'Upload',
+            trait_type: 'Style',
+            value: processingMode === 'normal' ? 'Normal Mode' : 'Savage Mode',
           },
-          { trait_type: 'Style', value: processingMode === 'normal' ? 'Indian Flag' : 'Savage Mode' },
           { trait_type: 'Flag', value: 'India' },
         ],
       }
 
-      // Upload metadata to IPFS
       const metadataUploadResult = await uploadMetadataToIPFS(metadata)
 
-      // Get NFT contract and token contract
+      setMintedShareData({
+        imageGatewayUrl: resolveIPFSUrl(imageUploadResult.url),
+        metadataCid: metadataUploadResult.cid,
+        nftName: nftName,
+      })
+
       const nftContract = new ethers.Contract(
         nftContractAddress,
         pkmb721Abi,
@@ -220,16 +187,13 @@ export function Nft() {
         signer
       )
 
-      // Get mint price
       const mintPrice = await nftContract.mintPrice()
 
-      // Check approval
       const currentAllowance = await tokenContract.allowance(
         account,
         nftContractAddress
       )
 
-      // If not approved enough, request approval
       if (currentAllowance < mintPrice) {
         const approveTx = await tokenContract.approve(
           nftContractAddress,
@@ -239,17 +203,14 @@ export function Nft() {
         toast.success('Approved PKMB token spending')
       }
 
-      // Mint the NFT
       const mintTx = await nftContract.mintNFT(
         account,
         metadataUploadResult.url
       )
       setTxHash(mintTx.hash)
 
-      // Wait for transaction confirmation
       const receipt = await mintTx.wait()
 
-      // Find NFT minted event to get the token ID
       const nftMintedEvent = receipt.logs
         .filter((log: any) => log.fragment?.name === 'NFTMinted')
         .map((log: any) => nftContract.interface.parseLog(log))
@@ -273,23 +234,59 @@ export function Nft() {
             'Insufficient PKMB tokens. Please get more from the faucet.'
         } else if (error.message.includes('user rejected')) {
           errorMsg = 'Transaction rejected by user'
+        } else if (error.message.includes('Network Error')) {
+          errorMsg = 'Network error. Please check your internet connection.'
+        } else if (error.message.includes('Failed to upload')) {
+          errorMsg = 'Failed to upload to IPFS. Please try again.'
         }
       }
-
       toast.error(errorMsg)
     } finally {
       setIsLoading(false)
     }
   }
 
-  const shareOnTwitter = () => {
-    if (!tokenId) return
+  const getShareableLink = () => {
+    if (!mintedShareData) return ''
+    return `${window.location.origin}/view-nft?cid=${mintedShareData.metadataCid}`
+  }
 
-    const nftUrl = `${window.location.origin}/nft/${tokenId}`
+  const shareOnTwitter = () => {
+    if (!mintedShareData) {
+      toast.error(
+        'NFT data not available for sharing. Please wait for minting to complete.'
+      )
+      return
+    }
+
+    const nftViewerPageUrl = getShareableLink()
+    if (!nftViewerPageUrl) return
+
     const tweetText = encodeURIComponent(
-      `Just minted my Indian Pride NFT with @pkmb_token! Check it out: ${nftUrl} #PKMB #NFT #India`
+      `Just minted my Indian Pride NFT "${mintedShareData.nftName}" with @pkmb_token! Check it out: ${nftViewerPageUrl} #PKMB #NFT #India`
     )
     window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, '_blank')
+    setShowShareDialog(false)
+  }
+
+  const copyShareLink = () => {
+    if (!mintedShareData) {
+      toast.error('NFT data not available for copying link.')
+      return
+    }
+    const link = getShareableLink()
+    if (!link) return
+
+    navigator.clipboard
+      .writeText(link)
+      .then(() => {
+        toast.success('Link copied to clipboard!')
+      })
+      .catch((err) => {
+        console.error('Failed to copy link: ', err)
+        toast.error('Failed to copy link.')
+      })
+    setShowShareDialog(false)
   }
 
   return (
@@ -303,14 +300,6 @@ export function Nft() {
             transition={{ duration: 0.5 }}
             className="max-w-3xl mx-auto"
           >
-            <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold">Mint Your Indian Pride NFT</h1>
-              <p className="text-muted-foreground mt-2">
-                Create a unique NFT with the Indian flag overlay for just 10
-                PKMB tokens
-              </p>
-            </div>
-
             {mintingStep === 'editing' && (
               <Card className="bg-background/80 backdrop-blur-sm border-2 shadow-xl">
                 <CardHeader>
@@ -324,9 +313,8 @@ export function Nft() {
                     onValueChange={(value) => setActiveTab(value)}
                     className="w-full"
                   >
-                    <TabsList className="grid grid-cols-2 mb-4">
+                    <TabsList className="grid grid-cols-1 mb-4">
                       <TabsTrigger value="upload">Upload Image</TabsTrigger>
-                      <TabsTrigger value="twitter">Twitter Profile</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="upload" className="space-y-4">
@@ -372,55 +360,6 @@ export function Nft() {
                         )}
                       </div>
                     </TabsContent>
-
-                    <TabsContent value="twitter" className="space-y-4">
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="twitter">Twitter Username</Label>
-                          <div className="flex gap-2">
-                            <Input
-                              id="twitter"
-                              placeholder="username (without @)"
-                              value={twitterUsername}
-                              onChange={(e) =>
-                                setTwitterUsername(e.target.value)
-                              }
-                            />
-                            <Button
-                              onClick={handleFetchTwitterImage}
-                              disabled={isLoading || !twitterUsername.trim()}
-                            >
-                              {isLoading ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Twitter className="h-4 w-4" />
-                              )}
-                              <span className="ml-2">Fetch</span>
-                            </Button>
-                          </div>
-                        </div>
-
-                        {previewImage && (
-                          <div className="flex flex-col items-center justify-center border rounded-lg p-4 text-center">
-                            <img
-                              src={previewImage}
-                              alt="Twitter Profile"
-                              className="max-h-64 object-contain rounded-lg"
-                            />
-                            <Button
-                              variant="outline"
-                              className="mt-4"
-                              onClick={() => {
-                                setPreviewImage(null)
-                                setUploadedFile(null)
-                              }}
-                            >
-                              Remove Image
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </TabsContent>
                   </Tabs>
 
                   <Separator className="my-6" />
@@ -452,9 +391,11 @@ export function Nft() {
 
                     <div className="space-y-2 mt-4">
                       <Label>Processing Mode</Label>
-                      <RadioGroup 
+                      <RadioGroup
                         value={processingMode}
-                        onValueChange={(value) => setProcessingMode(value as 'normal' | 'savage')}
+                        onValueChange={(value) =>
+                          setProcessingMode(value as 'normal' | 'savage')
+                        }
                         className="flex space-x-4"
                       >
                         <div className="flex items-center space-x-2">
@@ -467,7 +408,7 @@ export function Nft() {
                         </div>
                       </RadioGroup>
                       <p className="text-xs text-muted-foreground mt-2">
-                        {processingMode === 'normal' 
+                        {processingMode === 'normal'
                           ? 'Normal mode adds the Indian flag and official stamp to your image.'
                           : 'Savage mode adds decorative elements and a patriotic message to your image.'}
                       </p>
@@ -486,10 +427,10 @@ export function Nft() {
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Processing...
                       </>
+                    ) : processingMode === 'normal' ? (
+                      'Preview with Indian Flag'
                     ) : (
-                      processingMode === 'normal' 
-                        ? 'Preview with Indian Flag' 
-                        : 'Preview in Savage Mode'
+                      'Preview in Savage Mode'
                     )}
                   </Button>
                 </CardFooter>
@@ -533,7 +474,9 @@ export function Nft() {
                       <div>
                         <Label className="text-sm opacity-70">Style</Label>
                         <div className="font-medium">
-                          {processingMode === 'normal' ? 'Normal Mode' : 'Savage Mode'}
+                          {processingMode === 'normal'
+                            ? 'Normal Mode'
+                            : 'Savage Mode'}
                         </div>
                       </div>
 
@@ -618,10 +561,12 @@ export function Nft() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-col items-center justify-center p-4 text-center space-y-6">
-                    {processedImage && (
+                    {(mintedShareData?.imageGatewayUrl || processedImage) && (
                       <div className="border rounded-lg p-4 max-w-md">
                         <img
-                          src={processedImage}
+                          src={
+                            mintedShareData?.imageGatewayUrl || processedImage!
+                          }
                           alt="Minted NFT"
                           className="max-h-64 mx-auto object-contain rounded-lg"
                         />
@@ -629,7 +574,9 @@ export function Nft() {
                     )}
 
                     <div className="space-y-2">
-                      <h3 className="text-xl font-medium">{nftName}</h3>
+                      <h3 className="text-xl font-medium">
+                        {mintedShareData?.nftName || nftName}
+                      </h3>
                       {nftDescription && (
                         <p className="text-muted-foreground">
                           {nftDescription}
@@ -641,7 +588,12 @@ export function Nft() {
                       </p>
 
                       <p className="text-sm">
-                        Style: <span className="font-medium">{processingMode === 'normal' ? 'Normal Mode' : 'Savage Mode'}</span>
+                        Style:{' '}
+                        <span className="font-medium">
+                          {processingMode === 'normal'
+                            ? 'Normal Mode'
+                            : 'Savage Mode'}
+                        </span>
                       </p>
 
                       {txHash && (
@@ -662,7 +614,6 @@ export function Nft() {
                     variant="outline"
                     className="sm:flex-1"
                     onClick={() => {
-                      // Reset the form for a new NFT
                       setNftName('')
                       setNftDescription('')
                       setPreviewImage(null)
@@ -673,6 +624,7 @@ export function Nft() {
                       setMintingStep('editing')
                       setTxHash(null)
                       setTokenId(null)
+                      setMintedShareData(null)
                     }}
                   >
                     Create Another NFT
@@ -680,6 +632,7 @@ export function Nft() {
                   <Button
                     className="sm:flex-1"
                     onClick={() => setShowShareDialog(true)}
+                    disabled={!mintedShareData}
                   >
                     <Share2 className="mr-2 h-4 w-4" />
                     Share NFT
@@ -696,25 +649,37 @@ export function Nft() {
           <AlertDialogHeader>
             <AlertDialogTitle>Share Your NFT</AlertDialogTitle>
             <AlertDialogDescription>
-              Share your Indian Pride NFT with your friends and followers on
-              social media!
+              Share your "{mintedShareData?.nftName || 'Indian Pride NFT'}" with
+              your friends!
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex justify-center my-4">
-            {processedImage && (
+            {(mintedShareData?.imageGatewayUrl || processedImage) && (
               <img
-                src={processedImage}
-                alt="NFT"
+                src={mintedShareData?.imageGatewayUrl || processedImage!}
+                alt={mintedShareData?.nftName || 'NFT Preview'}
                 className="max-h-48 object-contain rounded-lg"
               />
             )}
           </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={shareOnTwitter}>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={copyShareLink}
+              className="w-full sm:w-auto"
+            >
+              <LinkIcon className="mr-2 h-4 w-4" /> Copy Link
+            </Button>
+            <AlertDialogAction
+              onClick={shareOnTwitter}
+              className="w-full sm:w-auto"
+            >
               <Twitter className="mr-2 h-4 w-4" />
               Share on Twitter
             </AlertDialogAction>
+            <AlertDialogCancel className="w-full sm:w-auto mt-2 sm:mt-0">
+              Cancel
+            </AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

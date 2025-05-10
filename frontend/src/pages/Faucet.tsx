@@ -27,13 +27,11 @@ import { faucetAbi } from '@/abis/faucetAbi'
 import { erc20Abi } from '@/abis/erc20Abi'
 
 export function Faucet() {
-  const { isConnected, account, connect } = useMetaMask()
+  const { isConnected, account, connect } = useMetaMask()  
   const [isLoading, setIsLoading] = useState(false)
   const [transactionStatus, setTransactionStatus] = useState<
-    'idle' | 'processing' | 'success' | 'error'
-  >('idle')
+    'idle' | 'processing' | 'success' | 'error'  >('idle')
   const [errorMessage, setErrorMessage] = useState<string>('')
-  const [remainingTokens, setRemainingTokens] = useState<string | null>(null)
   const [claimDetails, setClaimDetails] = useState({
     amount: '0',
     timeLeft: 0,

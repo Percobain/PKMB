@@ -256,7 +256,7 @@ export async function savageModeProcessing(imageUrl: string): Promise<Blob> {
     // Adjust font size based on canvas width and the large image flag
     const fontSize = isLargeImage 
       ? Math.max(Math.min(canvas.width * 0.07, 64), 132) // Larger font for large images
-      : Math.max(Math.min(canvas.width * 0.06, 48), 124) // Default font size
+      : Math.max(Math.min(canvas.width * 0.06, 48), 24) // Default font size
       
     ctx.font = `bold ${fontSize}px Arial`
     ctx.textAlign = 'center'

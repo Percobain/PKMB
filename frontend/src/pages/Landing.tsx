@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { AuroraBackground } from '@/components/ui/aurora-background'
 import { Navbar } from '@/components/Navbar'
 import { Button } from '@/components/ui/button'
@@ -9,9 +9,7 @@ import { LucideChevronRight, Droplets, PaintBucket } from 'lucide-react'
 
 export function Landing() {
   const navigate = useNavigate()
-  const [newsText, setNewsText] = useState(
-    'Breaking: $PKMB is trending worldwide! 🔥'
-  )
+  const [newsText, setNewsText] = useState('Owning Pakistan since 1947 🔥')
 
   useEffect(() => {
     const newsItems = [

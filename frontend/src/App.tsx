@@ -5,8 +5,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { ThemeProvider } from '@/components/theme-provider'
 
 function App() {
-  return (
-    <ThemeProvider defaultTheme="dark" storageKey="pkmb-theme">
+  return (    <ThemeProvider>
       <Router>
         <CommandMenu />
         <AppRoutes />
