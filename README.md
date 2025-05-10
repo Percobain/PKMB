@@ -1,3 +1,6 @@
+Let me update your README.md to include a demo video section:
+
+```markdown
 # $PKMB - India's Unity Memecoin
 
 ![PKMB Logo](./frontend/public/favicon.png)
@@ -7,6 +10,12 @@
 $PKMB is a community-driven memecoin that celebrates India's unity and strength. With a focus on humor and national pride, PKMB offers a unique Web3 experience featuring ERC-20 tokens, NFTs, and community engagement.
 
 Website: [https://www.pkmb.xyz/](https://www.pkmb.xyz/)
+
+## Demo
+
+[PKMB Demo Video](./demo/PKMB.mp4)
+
+Watch the full demo video to see PKMB in action! The video demonstrates the token faucet, NFT minting, and social sharing features.
 
 ## Features
 
@@ -29,20 +38,21 @@ Website: [https://www.pkmb.xyz/](https://www.pkmb.xyz/)
 -   Custom viewer page for showcasing NFTs
 
 ## Project Structure
+```
 
-```
 PKMB/
-├── contracts/         # Solidity smart contracts
-│   ├── scripts/       # Deployment scripts
-│   └── test/          # Contract test files
-└── frontend/          # React-based web application
-    ├── public/        # Static assets
-    └── src/
-        ├── abis/      # Contract ABIs
-        ├── components/# UI components
-        ├── pages/     # Main application pages
-        └── styles/    # CSS and styling
-```
+├── contracts/ # Solidity smart contracts
+│ ├── scripts/ # Deployment scripts
+│ └── test/ # Contract test files
+└── frontend/ # React-based web application
+├── public/ # Static assets
+└── src/
+├── abis/ # Contract ABIs
+├── components/# UI components
+├── pages/ # Main application pages
+└── styles/ # CSS and styling
+
+````
 
 ## Smart Contracts
 
@@ -68,7 +78,7 @@ cd contracts
 npm install
 npx hardhat compile
 npx hardhat test
-```
+````
 
 ### Frontend
 
@@ -102,3 +112,7 @@ This project is licensed under the MIT License.
 ## Disclaimer
 
 $PKMB is a memecoin created for entertainment purposes. The project makes humorous references to India-Pakistan relations but is intended for fun and community building only. Please use responsibly.
+
+```
+
+```
