@@ -234,7 +234,7 @@ export function MyNFTs() {
     const nftViewerPageUrl = getShareableLinkForSelected()
 
     const tweetText = encodeURIComponent(
-      `Check out my Indian Pride NFT "${selectedNft.name}" minted with @pkmb_token! View it here: ${nftViewerPageUrl} #PKMB #NFT #India`
+      `Check out my Indian Pride NFT "${selectedNft.name}" minted $PKMB! ✨ Created by @shreyanstatiya & @Amandeeep02 - View it here: ${nftViewerPageUrl} #PKMB #NFT #India #WEB3` 
     )
     window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, '_blank')
     setShowShareDialog(false)
