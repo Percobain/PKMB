@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
-import { Loader2, ExternalLink, Share2, LinkIcon, Twitter } from 'lucide-react'
+import { Loader2, Share2, LinkIcon, Trash2, SendHorizontal } from 'lucide-react'
 import { useMetaMask } from '@/hooks/useMetamask'
 import { pkmb721Abi } from '@/abis/pkmb721Abi'
 import { useNavigate } from 'react-router-dom'
@@ -21,6 +21,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 interface NFT {
   id: string
@@ -39,9 +41,14 @@ export function MyNFTs() {
   const { isConnected, account, connect } = useMetaMask()
   const [nfts, setNfts] = useState<NFT[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isActionLoading, setIsActionLoading] = useState(false)
   const navigate = useNavigate()
   const [selectedNft, setSelectedNft] = useState<NFT | null>(null)
   const [showShareDialog, setShowShareDialog] = useState(false)
+  const [showBurnDialog, setShowBurnDialog] = useState(false)
+  const [showTransferDialog, setShowTransferDialog] = useState(false)
+  const [transferAddress, setTransferAddress] = useState('')
+  const [isValidAddress, setIsValidAddress] = useState(false)
 
   const nftContractAddress =
     import.meta.env.VITE_PKMB721 || '0x61f5CBf29cf93f6cA7A86B89Cb55927eda80eE7C'
@@ -51,6 +58,15 @@ export function MyNFTs() {
       fetchUserNFTs()
     }
   }, [isConnected, account, nftContractAddress])
+
+  // Validate Ethereum address
+  useEffect(() => {
+    try {
+      setIsValidAddress(ethers.isAddress(transferAddress))
+    } catch (e) {
+      setIsValidAddress(false)
+    }
+  }, [transferAddress])
 
   const fetchUserNFTs = async () => {
     if (!isConnected || !account) {
@@ -224,6 +240,124 @@ export function MyNFTs() {
     setShowShareDialog(false)
   }
 
+  // Burn NFT functionality
+  const burnNFT = async () => {
+    if (!selectedNft || !account || !isConnected) {
+      toast.error('Please select an NFT to burn')
+      return
+    }
+
+    setIsActionLoading(true)
+    try {
+      if (!window.ethereum) {
+        throw new Error('MetaMask not detected')
+      }
+
+      const provider = new ethers.BrowserProvider(window.ethereum)
+      const signer = await provider.getSigner()
+      const nftContract = new ethers.Contract(
+        nftContractAddress,
+        pkmb721Abi,
+        signer
+      )
+
+      // Use burnNFT instead of burn, which is the correct function name based on the ABI
+      const tx = await nftContract.burnNFT(selectedNft.id)
+      toast.success('Burning NFT...', {
+        description: 'Transaction submitted. Please wait for confirmation.'
+      })
+
+      await tx.wait()
+      
+      // Remove the burned NFT from state
+      setNfts(currentNfts => 
+        currentNfts.filter(nft => nft.id !== selectedNft.id)
+      )
+      
+      toast.success('NFT burned successfully', {
+        description: `${selectedNft.name} has been permanently destroyed.`
+      })
+      setShowBurnDialog(false)
+    } catch (error: any) {
+      console.error('Error burning NFT:', error)
+      let errorMessage = 'Failed to burn NFT'
+      
+      if (error.message) {
+        if (error.message.includes('user rejected transaction')) {
+          errorMessage = 'Transaction was rejected'
+        }
+      }
+      
+      toast.error(errorMessage, {
+        description: 'Please try again or contact support.'
+      })
+    } finally {
+      setIsActionLoading(false)
+    }
+  }
+
+  // Transfer NFT functionality
+  const transferNFT = async () => {
+    if (!selectedNft || !account || !isConnected || !isValidAddress) {
+      toast.error('Please enter a valid Ethereum address')
+      return
+    }
+
+    setIsActionLoading(true)
+    try {
+      if (!window.ethereum) {
+        throw new Error('MetaMask not detected')
+      }
+
+      const provider = new ethers.BrowserProvider(window.ethereum)
+      const signer = await provider.getSigner()
+      const nftContract = new ethers.Contract(
+        nftContractAddress,
+        pkmb721Abi,
+        signer
+      )
+
+      // Use the ERC-721 safeTransferFrom function
+      const tx = await nftContract['safeTransferFrom(address,address,uint256)'](
+        account,
+        transferAddress,
+        selectedNft.id
+      )
+      
+      toast.success('Transferring NFT...', {
+        description: 'Transaction submitted. Please wait for confirmation.'
+      })
+
+      await tx.wait()
+      
+      // Remove the transferred NFT from state
+      setNfts(currentNfts => 
+        currentNfts.filter(nft => nft.id !== selectedNft.id)
+      )
+      
+      toast.success('NFT transferred successfully', {
+        description: `${selectedNft.name} has been transferred to ${transferAddress.slice(0, 6)}...${transferAddress.slice(-4)}`
+      })
+      setShowTransferDialog(false)
+      setTransferAddress('')
+    } catch (error: any) {
+      console.error('Error transferring NFT:', error)
+      let errorMessage = 'Failed to transfer NFT'
+      
+      if (error.message) {
+        if (error.message.includes('user rejected transaction')) {
+          errorMessage = 'Transaction was rejected'
+        }
+      }
+      
+      toast.error(errorMessage, {
+        description: 'Please try again or contact support.'
+      })
+    } finally {
+      setIsActionLoading(false)
+    }
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -265,7 +399,7 @@ export function MyNFTs() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {nfts.map((nft) => (
                   <Card
                     key={nft.id}
@@ -289,7 +423,7 @@ export function MyNFTs() {
                     </div>
                     <CardContent className="p-4 flex-grow">
                       <h3 className="font-bold truncate text-lg">{nft.name}</h3>
-                      <p className="text-sm text-muted-foreground truncate h-10">
+                      <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]">
                         {nft.description || "No description available."}
                       </p>
                       <p className="text-xs mt-2">
@@ -309,26 +443,45 @@ export function MyNFTs() {
                         </div>
                       )}
                     </CardContent>
-                    <CardFooter className="p-4 pt-0 flex justify-between items-center">
+                    <CardFooter className="p-4 pt-0 flex flex-col gap-2">
+                      <div className="grid grid-cols-2 gap-2 w-full">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full justify-center"
+                          onClick={() => {
+                            setSelectedNft(nft)
+                            setShowShareDialog(true)
+                          }}
+                          disabled={!nft.metadataCid}
+                        >
+                          <Share2 className="h-4 w-4 mr-2" />
+                          Share
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full justify-center"
+                          onClick={() => {
+                            setSelectedNft(nft)
+                            setShowTransferDialog(true)
+                          }}
+                        >
+                          <SendHorizontal className="h-4 w-4 mr-2" />
+                          Transfer
+                        </Button>
+                      </div>
                       <Button
-                        variant="outline"
+                        variant="destructive"
                         size="sm"
-                        onClick={() => window.open(`https://sepolia.etherscan.io/token/${nftContractAddress}?a=${nft.id}`, '_blank')}
-                      >
-                        <ExternalLink className="h-3 w-3 sm:mr-1" />
-                        <span className="hidden sm:inline">Etherscan</span>
-                      </Button>
-                      <Button
-                        variant="default"
-                        size="sm"
+                        className="w-full justify-center"
                         onClick={() => {
                           setSelectedNft(nft)
-                          setShowShareDialog(true)
+                          setShowBurnDialog(true)
                         }}
-                        disabled={!nft.metadataCid}
                       >
-                        <Share2 className="h-3 w-3 sm:mr-1" />
-                        <span className="hidden sm:inline">Share</span>
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Burn
                       </Button>
                     </CardFooter>
                   </Card>
@@ -339,6 +492,7 @@ export function MyNFTs() {
         </div>
       </div>
 
+      {/* Share Dialog */}
       <AlertDialog open={showShareDialog} onOpenChange={setShowShareDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -361,19 +515,83 @@ export function MyNFTs() {
                 </div>
               )}
             </div>
-          )}
-          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="outline" onClick={copyShareLinkForSelected} className="w-full sm:w-auto" disabled={!selectedNft?.metadataCid}>
-              <LinkIcon className="mr-2 h-4 w-4" /> Copy Link
-            </Button>
-            <AlertDialogAction onClick={shareOnTwitter} className="w-full sm:w-auto" disabled={!selectedNft?.metadataCid}>
-              <Twitter className="mr-2 h-4 w-4" />
-              Share on Twitter
-            </AlertDialogAction>
-            <AlertDialogCancel className="w-full sm:w-auto mt-2 sm:mt-0">Cancel</AlertDialogCancel>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  )
-}
+                    )}
+                    <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                      <Button variant="outline" onClick={copyShareLinkForSelected} className="flex-1 sm:flex-none">
+                        <LinkIcon className="mr-2 h-4 w-4" />
+                        Copy Link
+                      </Button>
+                      <Button variant="outline" onClick={shareOnTwitter} className="flex-1 sm:flex-none">
+                        <img 
+                          src="/twitter.svg" 
+                          alt="Twitter" 
+                          className="h-4 w-4 mr-2" 
+                        />
+                        Share on Twitter
+                      </Button>
+                      <AlertDialogCancel asChild>
+                        <Button variant="ghost" className="flex-1 sm:flex-none">Cancel</Button>
+                      </AlertDialogCancel>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+          
+                {/* Burn Confirmation Dialog */}
+                <AlertDialog open={showBurnDialog} onOpenChange={setShowBurnDialog}>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure you want to burn this NFT?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action will permanently destroy "{selectedNft?.name || 'this NFT'}" and cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel disabled={isActionLoading}>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={burnNFT} disabled={isActionLoading} className="bg-destructive hover:bg-destructive/90">
+                        {isActionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+                        Burn NFT
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+          
+                {/* Transfer Dialog */}
+                <AlertDialog open={showTransferDialog} onOpenChange={setShowTransferDialog}>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Transfer NFT</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Transfer "{selectedNft?.name || 'this NFT'}" to another address. Ensure the address is correct.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="transfer-address" className="text-right">
+                          Recipient
+                        </Label>
+                        <Input
+                          id="transfer-address"
+                          value={transferAddress}
+                          onChange={(e) => setTransferAddress(e.target.value)}
+                          className="col-span-3"
+                          placeholder="0x..."
+                        />
+                      </div>
+                      {!isValidAddress && transferAddress.length > 0 && (
+                        <p className="col-span-4 text-sm text-destructive text-center -mt-2">
+                          Please enter a valid Ethereum address.
+                        </p>
+                      )}
+                    </div>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel disabled={isActionLoading}>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={transferNFT} disabled={!isValidAddress || isActionLoading}>
+                        {isActionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <SendHorizontal className="mr-2 h-4 w-4" />}
+                        Transfer
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            )
+          }

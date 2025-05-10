@@ -180,10 +180,8 @@ export function Faucet() {
       console.error('Error claiming tokens:', error)
       setTransactionStatus('error')
 
-      // Extract error message from blockchain error
       let errorMsg = 'Failed to claim tokens. Please try again later.'
       if (error.message) {
-        // Check for common faucet errors
         if (error.message.includes('Claim interval not yet passed')) {
           errorMsg =
             'Please wait for the claim interval to pass before trying again.'
@@ -191,7 +189,7 @@ export function Faucet() {
           errorMsg = 'The faucet is currently paused.'
         } else if (error.message.includes('Not enough tokens in faucet')) {
           errorMsg = 'The faucet is out of tokens. Please try again later.'
-        } else if (error.message.includes('user rejected transaction')) {
+        } else if (error.message.includes('user rejected transaction') || error.message.includes('User denied transaction signature') || error.message.includes('user rejected action')) {
           errorMsg = 'Transaction was rejected by the user.'
         }
       }

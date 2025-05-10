@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
-import { Loader2, Upload, Twitter, Info, Share2, LinkIcon } from 'lucide-react'
+import { Loader2, Upload, Info, Share2, LinkIcon } from 'lucide-react'
 import { useMetaMask } from '@/hooks/useMetamask'
 import { pkmb721Abi } from '@/abis/pkmb721Abi'
 import { erc20Abi } from '@/abis/erc20Abi'
@@ -61,6 +61,7 @@ export function Nft() {
 
   const [activeTab, setActiveTab] = useState('upload')
   const [isLoading, setIsLoading] = useState(false)
+  const [isImageUploading, setIsImageUploading] = useState(false)
   const [mintingStep, setMintingStep] = useState<
     'editing' | 'preview' | 'minting' | 'success'
   >('editing')
@@ -91,6 +92,7 @@ export function Nft() {
         return
       }
       
+      setIsImageUploading(true) // Set loading to true
       setUploadedFile(file)
 
       const reader = new FileReader()
@@ -98,7 +100,12 @@ export function Nft() {
         if (event.target?.result) {
           setPreviewImage(event.target.result as string)
           setProcessedImage(null)
+          setIsImageUploading(false) // Set loading to false when complete
         }
+      }
+      reader.onerror = () => {
+        toast.error('Failed to load image')
+        setIsImageUploading(false) // Also handle error case
       }
       reader.readAsDataURL(file)
     }
@@ -122,6 +129,7 @@ export function Nft() {
             return
           }
           
+          setIsImageUploading(true) // Set loading to true
           setUploadedFile(file);
           
           const reader = new FileReader();
@@ -129,8 +137,13 @@ export function Nft() {
             if (e.target?.result) {
               setPreviewImage(e.target.result as string);
               setProcessedImage(null);
+              setIsImageUploading(false) // Set loading to false when complete
             }
           };
+          reader.onerror = () => {
+            toast.error('Failed to load pasted image')
+            setIsImageUploading(false) // Also handle error case
+          }
           reader.readAsDataURL(file);
           break;
         }
@@ -365,7 +378,12 @@ export function Nft() {
                       onPaste={handlePaste}
                       tabIndex={0}
                     >
-                      {previewImage ? (
+                      {isImageUploading ? (
+                        <div className="py-8 flex flex-col items-center">
+                          <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
+                          <p className="text-sm text-muted-foreground">Processing image...</p>
+                        </div>
+                      ) : previewImage ? (
                         <div className="w-full">
                           <img
                             src={previewImage}
@@ -724,7 +742,11 @@ export function Nft() {
               onClick={shareOnTwitter}
               className="w-full sm:w-auto"
             >
-              <Twitter className="mr-2 h-4 w-4" />
+              <img 
+                src="/twitter.svg" 
+                alt="Twitter" 
+                className="mr-2 h-4 w-4" 
+              />
               Share on Twitter
             </AlertDialogAction>
             <AlertDialogCancel className="w-full sm:w-auto mt-2 sm:mt-0">
