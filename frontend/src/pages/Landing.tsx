@@ -214,7 +214,7 @@ export function Landing() {
                   <div className="mt-auto">
                     <Button
                       variant="outline"
-                      onClick={() => navigate('/nft')}
+                      onClick={() => navigate('/mint')}
                       className="border-green-500/50 text-green-400 hover:bg-green-500/10"
                     >
                       Explore NFTs
