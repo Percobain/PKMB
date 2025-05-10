@@ -135,7 +135,7 @@ export function ViewNftPage() {
                           <p className="font-medium text-primary truncate">{attr.trait_type}</p>
                           <p className="text-muted-foreground truncate">
                             {attr.trait_type === 'Style' ? 
-                              (String(attr.value) === 'normal' ? 'Indian' : 'Desi') : 
+                              (String(attr.value).toLowerCase().includes('normal') ? 'Indian' : 'Desi') : 
                               String(attr.value)}
                           </p>
                         </div>
