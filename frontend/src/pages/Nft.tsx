@@ -55,7 +55,7 @@ export function Nft() {
   const [processedImage, setProcessedImage] = useState<string | null>(null)
   const [nftName, setNftName] = useState('')
   const [nftDescription, setNftDescription] = useState('')
-  const [processingMode, setProcessingMode] = useState<'normal' | 'savage'>(
+  const [processingMode, setProcessingMode] = useState<'normal' | 'desi'>(
     'normal'
   )
 
@@ -159,7 +159,7 @@ export function Nft() {
           { trait_type: 'Creator', value: account },
           {
             trait_type: 'Style',
-            value: processingMode === 'normal' ? 'Normal Mode' : 'Savage Mode',
+            value: processingMode === 'normal' ? 'Normal Mode' : 'Desi Mode',
           },
           { trait_type: 'Flag', value: 'India' },
         ],
@@ -392,7 +392,7 @@ export function Nft() {
                       <RadioGroup
                         value={processingMode}
                         onValueChange={(value) =>
-                          setProcessingMode(value as 'normal' | 'savage')
+                          setProcessingMode(value as 'normal' | 'desi')
                         }
                         className="flex space-x-4"
                       >
@@ -402,13 +402,13 @@ export function Nft() {
                         </div>
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="savage" id="savage" />
-                          <Label htmlFor="savage">Savage Mode</Label>
+                          <Label htmlFor="savage">Desi Mode</Label>
                         </div>
                       </RadioGroup>
                       <p className="text-xs text-muted-foreground mt-2">
                         {processingMode === 'normal'
-                          ? 'Normal mode adds the Indian flag and official stamp to your image.'
-                          : 'Savage mode adds decorative elements and a patriotic message to your image.'}
+                          ? 'Normal Mode is your badge of being a true Hindustani.'
+                          : 'Desi mode shows them who the real daddy is.'}
                       </p>
                     </div>
                   </div>
@@ -428,7 +428,7 @@ export function Nft() {
                     ) : processingMode === 'normal' ? (
                       'Preview with Indian Flag'
                     ) : (
-                      'Preview in Savage Mode'
+                      'Preview in Desi Mode'
                     )}
                   </Button>
                 </CardFooter>
@@ -474,7 +474,7 @@ export function Nft() {
                         <div className="font-medium">
                           {processingMode === 'normal'
                             ? 'Normal Mode'
-                            : 'Savage Mode'}
+                            : 'Desi Mode'}
                         </div>
                       </div>
 
@@ -590,7 +590,7 @@ export function Nft() {
                         <span className="font-medium">
                           {processingMode === 'normal'
                             ? 'Normal Mode'
-                            : 'Savage Mode'}
+                            : 'Desi Mode'}
                         </span>
                       </p>
 
