@@ -13,10 +13,14 @@ export function Landing() {
     <>
       <Navbar />
       {/* Hero Section with Aurora Background */}
-      <AuroraBackground animate={true} speed={4} className="h-screen flex items-center justify-center">
+      <AuroraBackground
+        animate={true}
+        speed={4}
+        className="h-screen flex items-center justify-center"
+      >
         <div className="container mx-auto max-w-6xl px-4 flex flex-col items-center justify-between h-[90vh]">
-          <div className="flex-grow"></div> {/* Spacer to push content down from top */}
-          
+          <div className="flex-grow"></div>{' '}
+          {/* Spacer to push content down from top */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
@@ -28,17 +32,7 @@ export function Landing() {
             className="flex flex-col items-center text-center gap-6 w-full"
           >
             <div className="relative">
-              <motion.div
-                animate={{
-                  scale: [1, 1.05, 1],
-                  rotate: [0, 2, 0, -2, 0],
-                }}
-                transition={{
-                  duration: 5,
-                  repeat: Infinity,
-                  repeatType: 'reverse',
-                }}
-              >
+              <motion.div>
                 <div className="font-black text-7xl md:text-9xl tracking-tighter bg-gradient-to-r from-orange-500 via-white to-green-500 text-transparent bg-clip-text">
                   $PKMB
                 </div>
@@ -62,8 +56,9 @@ export function Landing() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.9 }}
             >
-              $PKMB is the memecoin that celebrates India's unity.
-              Just a coin from a country that can land on the moon... while others can't even land a loan.
+              $PKMB is the memecoin that celebrates India's unity. Just a coin
+              from a country that can land on the moon... while others can't
+              even land a loan.
             </motion.p>
 
             <motion.div
@@ -74,16 +69,15 @@ export function Landing() {
               <Button
                 size="lg"
                 onClick={() => navigate('/faucet')}
-                className="text-lg px-8 py-6 bg-gradient-to-r from-orange-500 via-white to-green-500 hover:from-orange-600 hover:via-white hover:to-green-600 text-black font-bold transition-all shadow-lg hover:shadow-xl"
+                className="text-lg px-8 py-6 bg-gradient-to-r from-orange-500 via-white to-green-500 hover:from-orange-600 hover:via-white hover:to-green-600 text-black font-bold transition-all shadow-lg hover:shadow-xl cursor-pointer"
               >
                 Get your $PKMB now
                 <LucideChevronRight className="ml-2 h-5 w-5" />
               </Button>
             </motion.div>
           </motion.div>
-          
-          <div className="flex-grow"></div> {/* Spacer for vertical centering */}
-
+          <div className="flex-grow"></div>{' '}
+          {/* Spacer for vertical centering */}
           {/* News Ticker - Marquee Style */}
           <motion.div
             className="relative overflow-hidden w-full py-3 bg-black/30 backdrop-blur-sm rounded-lg border border-white/10 text-white"
@@ -188,7 +182,8 @@ export function Landing() {
                     🎨 NFT Mint
                   </h3>
                   <p className="text-muted-foreground mb-6">
-                    Build your legacy <br /> Digital mark of India's strength, forever on-chain.
+                    Build your legacy <br /> Digital mark of India's strength,
+                    forever on-chain.
                   </p>
                   <div className="mt-auto">
                     <Button
@@ -220,7 +215,8 @@ export function Landing() {
                     🖼️ NFT Collections
                   </h3>
                   <p className="text-muted-foreground mb-6">
-                    Browse our gallery <br /> Discover the finest Indian pride digital collectibles.
+                    Browse our gallery <br /> Discover the finest Indian pride
+                    digital collectibles.
                   </p>
                   <div className="mt-auto">
                     <Button
@@ -252,7 +248,13 @@ export function Landing() {
               A Memecoin with Style & Spice
             </h2>
             <p className="text-muted-foreground mb-8 text-lg">
-              $PKMB is more than just a memecoin — it's a symbol of India's unwavering unity and strength. While some nations stumble, Bharat rises. With our community-driven spirit and a touch of humor, we're reshaping fun in Web3, all while standing tall and proud. Join us in this journey of laughter, memes, and a sprinkle of spice. Together, we're not just creating a coin; we're building a legacy. 
+              $PKMB is more than just a memecoin — it's a symbol of India's
+              unwavering unity and strength. While some nations stumble, Bharat
+              rises. With our community-driven spirit and a touch of humor,
+              we're reshaping fun in Web3, all while standing tall and proud.
+              Join us in this journey of laughter, memes, and a sprinkle of
+              spice. Together, we're not just creating a coin; we're building a
+              legacy.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
               <div className="bg-black/20 backdrop-blur-sm rounded-lg p-4 border border-white/5">
