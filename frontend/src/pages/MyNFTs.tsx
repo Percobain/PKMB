@@ -32,6 +32,7 @@ interface NFT {
     value: string
   }[]
   metadataCid: string
+  creator?: string
 }
 
 export function MyNFTs() {
@@ -109,6 +110,15 @@ export function MyNFTs() {
         try {
           const tokenURI = await nftContract.tokenURI(tokenId)
 
+          // Get the creator address (minter) for this token
+          let creator = "Unknown"
+          try {
+            const minter = await nftContract.getMinter(tokenId)
+            creator = minter
+          } catch (e) {
+            console.warn(`Failed to get minter for token ${tokenId}:`, e)
+          }
+
           let currentMetadataCid = ''
           if (tokenURI && tokenURI.startsWith('ipfs://')) {
             currentMetadataCid = tokenURI.substring(7)
@@ -142,6 +152,7 @@ export function MyNFTs() {
             image: resolveIPFSUrl(metadata.image) || '',
             attributes: metadata.attributes || [],
             metadataCid: currentMetadataCid,
+            creator: creator
           }
         } catch (error) {
           console.error(`Error fetching metadata for token ${tokenId}:`, error)
@@ -152,6 +163,7 @@ export function MyNFTs() {
             image: '',
             attributes: [],
             metadataCid: '',
+            creator: 'Unknown'
           }
         }
       })
@@ -213,18 +225,21 @@ export function MyNFTs() {
   }
 
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <Navbar />
-      <AuroraBackground animate={true} speed={2}>
-        <div className="container mx-auto px-4 py-16">
+      <div className="relative flex-grow">
+        <AuroraBackground animate={true} speed={2} className="fixed inset-0 -z-10" />
+        <div className="container mx-auto px-4 py-16 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             className="max-w-6xl mx-auto"
           >
-            <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold">My NFT Collection</h1>
+            <div className="text-center mb-8 mt-8">
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-500 via-white to-green-500 inline-block text-transparent bg-clip-text">
+                My NFT Collection
+                </h1>
               <p className="text-muted-foreground mt-2">
                 View all your Indian Pride NFTs stored on the blockchain
               </p>
@@ -322,7 +337,7 @@ export function MyNFTs() {
             )}
           </motion.div>
         </div>
-      </AuroraBackground>
+      </div>
 
       <AlertDialog open={showShareDialog} onOpenChange={setShowShareDialog}>
         <AlertDialogContent>
@@ -359,6 +374,6 @@ export function MyNFTs() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   )
 }

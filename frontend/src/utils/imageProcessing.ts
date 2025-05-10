@@ -299,7 +299,7 @@ export async function savageModeProcessing(imageUrl: string): Promise<Blob> {
       )
     })
   } catch (error) {
-    console.error('Error in savage mode processing:', error)
+    console.error('Error in Desi mode processing:', error)
     throw error
   }
 }
@@ -342,12 +342,12 @@ export async function fetchTwitterProfileImage(
 /**
  * Process an image based on the selected mode
  * @param imageUrl The URL of the image to process
- * @param mode The processing mode: 'normal' or 'savage'
+ * @param mode The processing mode: 'normal' or 'desi'
  * @returns A promise that resolves to a Blob of the processed image
  */
 export async function processImage(
   imageUrl: string, 
-  mode: 'normal' | 'savage'
+  mode: 'normal' | 'desi'
 ): Promise<Blob> {
   if (mode === 'normal') {
     return normalModeProcessing(imageUrl)
