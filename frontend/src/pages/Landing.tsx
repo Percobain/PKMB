@@ -95,8 +95,8 @@ export function Landing() {
                 {[
                   'Owning Pakistan since 1947 🔥',
                   'India talks to ISRO. Pakistan listens to IMF.',
-                  'India’s GDP hits trillions. Pakistan hits rock bottom',
-                  'We hit boundaries. They cross them illegaly.',
+                  'India’s GDP hits trillions. Pakistan hits rock bottom.',
+                  'We hit boundaries. They cross them illegally.',
                   'We build tech giants. They build terrorists.',
                   '1947 | 1965 | 1971 | 1999 | 2025'
                 ].map((item, index) => (
