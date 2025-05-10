@@ -1,6 +1,4 @@
-Let me update your README.md to include a demo video section:
 
-```markdown
 # $PKMB - India's Unity Memecoin
 
 ![PKMB Logo](./frontend/public/favicon.png)
@@ -115,4 +113,3 @@ $PKMB is a memecoin created for entertainment purposes. The project makes humoro
 
 ```
 
-```
