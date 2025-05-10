@@ -27,6 +27,7 @@ import { useMetaMask } from '@/hooks/useMetamask'
 import { faucetAbi } from '@/abis/faucetAbi'
 import { erc20Abi } from '@/abis/erc20Abi'
 import { Progress } from '@/components/ui/progress'
+import { Badge } from '@/components/ui/badge'
 
 export function Faucet() {
   const { isConnected, account, connect } = useMetaMask()  
@@ -40,6 +41,7 @@ export function Faucet() {
     canClaim: false,
   })
   const [txHash, setTxHash] = useState<string | null>(null)
+  const [faucetBalance, setFaucetBalance] = useState<number>(0)
 
   const faucetAddress =
     import.meta.env.VITE_Faucet || '0x8d7404a3D9b90877e4d1464b98b0D49bB3081203'
@@ -67,9 +69,14 @@ export function Faucet() {
           provider
         )
 
+        // Get faucet balance
+        const balance = await tokenContract.balanceOf(faucetAddress)
+        const decimals = await tokenContract.decimals()
+        const formattedBalance = parseFloat(ethers.formatUnits(balance, decimals))
+        setFaucetBalance(formattedBalance)
+
         // Get claim amount
         const claimAmount = await faucetContract.claimAmount()
-        const decimals = await tokenContract.decimals()
         const formattedAmount = ethers.formatUnits(claimAmount, decimals)
 
         // Get claim interval and check if user can claim
@@ -232,14 +239,29 @@ export function Faucet() {
 
             <Card className="bg-background/80 backdrop-blur-sm border-2 border-white/10 shadow-xl overflow-hidden">
               <CardHeader className="bg-black/40 border-b border-white/5 pb-4">
-                <div>
-                  <CardTitle className="text-2xl font-bold flex items-center gap-2">
-                    <Droplets className="h-5 w-5 text-blue-400" />
-                    <span>$PKMB Token</span>
-                  </CardTitle>
-                  <CardDescription className="mt-1">
-                    Claim {claimDetails.amount} PKMB every 24 hours
-                  </CardDescription>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                      <Droplets className="h-5 w-5 text-blue-400" />
+                      <span>$PKMB Token</span>
+                    </CardTitle>
+                    <CardDescription className="mt-1">
+                      Claim {claimDetails.amount} PKMB every 24 hours
+                    </CardDescription>
+                  </div>
+                  <Badge 
+                    variant={faucetBalance >= 100 ? "default" : "destructive"}
+                    className={faucetBalance >= 100 
+                      ? "bg-green-500/20 text-green-400 hover:bg-green-500/30 border border-green-500/30 flex items-center gap-1.5" 
+                      : "bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30 flex items-center gap-1.5"}
+                  >
+                    <div 
+                      className={faucetBalance >= 100 
+                        ? "h-2 w-2 rounded-full bg-green-400 animate-pulse" 
+                        : "h-2 w-2 rounded-full bg-red-400 animate-pulse"} 
+                    />
+                    {faucetBalance >= 100 ? "Active" : "Not Active"}
+                  </Badge>
                 </div>
               </CardHeader>
 
