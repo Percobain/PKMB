@@ -1,4 +1,4 @@
-import { useState, useRef, ChangeEvent, useEffect } from 'react'
+import { useState, useRef, ChangeEvent } from 'react'
 import { ethers } from 'ethers'
 import { Navbar } from '@/components/Navbar'
 import { AuroraBackground } from '@/components/ui/aurora-background'
@@ -28,7 +28,6 @@ import {
 import {
   normalModeProcessing,
   savageModeProcessing,
-  fetchTwitterProfileImage,
 } from '@/utils/imageProcessing'
 import {
   AlertDialog,
@@ -51,7 +50,6 @@ interface MintedShareableData {
 export function Nft() {
   const { isConnected, account, connect } = useMetaMask()
 
-  const [twitterUsername, setTwitterUsername] = useState('')
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   const [processedImage, setProcessedImage] = useState<string | null>(null)
@@ -617,13 +615,12 @@ export function Nft() {
                       setNftName('')
                       setNftDescription('')
                       setPreviewImage(null)
+                      setPreviewImage(null)
                       setProcessedImage(null)
                       setUploadedFile(null)
-                      setTwitterUsername('')
                       setProcessingMode('normal')
                       setMintingStep('editing')
                       setTxHash(null)
-                      setTokenId(null)
                       setMintedShareData(null)
                     }}
                   >

@@ -40,7 +40,6 @@ export function Faucet() {
     canClaim: false,
   })
   const [txHash, setTxHash] = useState<string | null>(null)
-  const [remainingTokens, setRemainingTokens] = useState<string>('0')
 
   const faucetAddress =
     import.meta.env.VITE_Faucet || '0x8d7404a3D9b90877e4d1464b98b0D49bB3081203'
@@ -72,10 +71,6 @@ export function Faucet() {
         const claimAmount = await faucetContract.claimAmount()
         const decimals = await tokenContract.decimals()
         const formattedAmount = ethers.formatUnits(claimAmount, decimals)
-
-        // Get token balance of faucet
-        const balance = await tokenContract.balanceOf(faucetAddress)
-        setRemainingTokens(ethers.formatUnits(balance, decimals))
 
         // Get claim interval and check if user can claim
         if (account) {

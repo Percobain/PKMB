@@ -27,7 +27,7 @@ export function ThemeProvider({
   ...props
 }: ThemeProviderProps) {  // Always use dark theme
   const defaultTheme = 'dark'
-  const storageKey = 'vite-ui-theme'
+  // const storageKey = 'vite-ui-theme'
   const [theme] = useState<Theme>(defaultTheme)
 
   useEffect(() => {

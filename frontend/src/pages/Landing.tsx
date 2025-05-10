@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion'
-import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AuroraBackground } from '@/components/ui/aurora-background'
 import { Navbar } from '@/components/Navbar'
@@ -9,26 +8,6 @@ import { LucideChevronRight, Droplets, PaintBucket } from 'lucide-react'
 
 export function Landing() {
   const navigate = useNavigate()
-  const [newsText, setNewsText] = useState('Owning Pakistan since 1947 🔥')
-
-  useEffect(() => {
-    const newsItems = [
-      'Owning Pakistan since 1947 🔥',
-      'We launch rockets 🚀, PK launch hashtags #',
-      'Chand pe jhanda aur Jhande pe Chand hone mei farak hota hai',
-      'Every time we sneeze, Pakistan catches a cold 🤧',
-      'Trying to match India with borrowed WiFi and pirated dreams.',
-      'Chand pe jaane ka soch rahe hain, tum abhi tak Kashmir mein phase ho.',
-    ]
-    let currentIndex = 0
-
-    const interval = setInterval(() => {
-      currentIndex = (currentIndex + 1) % newsItems.length
-      setNewsText(newsItems[currentIndex])
-    }, 1000)
-
-    return () => clearInterval(interval)
-  }, [])
 
   return (
     <>
