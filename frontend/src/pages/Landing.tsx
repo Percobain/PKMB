@@ -4,7 +4,7 @@ import { AuroraBackground } from '@/components/ui/aurora-background'
 import { Navbar } from '@/components/Navbar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { LucideChevronRight, Droplets, PaintBucket } from 'lucide-react'
+import { LucideChevronRight, Droplets, PaintBucket, Grid } from 'lucide-react'
 
 export function Landing() {
   const navigate = useNavigate()
@@ -62,8 +62,8 @@ export function Landing() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.9 }}
             >
-              $PKMB is the memecoin that celebrates India’s unity.
-              Just a coin from a country that can land on the moon... while others can’t even land a loan.
+              $PKMB is the memecoin that celebrates India's unity.
+              Just a coin from a country that can land on the moon... while others can't even land a loan.
             </motion.p>
 
             <motion.div
@@ -126,7 +126,7 @@ export function Landing() {
         <div className="container mx-auto max-w-6xl px-4 py-16">
           {/* Features Section */}
           <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16"
+            className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16"
             variants={{
               hidden: { opacity: 0 },
               show: {
@@ -156,7 +156,7 @@ export function Landing() {
                     🚰 Faucet
                   </h3>
                   <p className="text-muted-foreground mb-6">
-                    Claim $PKMB <br /> while they’re stuck in economic crisis.
+                    Claim $PKMB <br /> while they're stuck in economic crisis.
                   </p>
                   <div className="mt-auto">
                     <Button
@@ -172,7 +172,7 @@ export function Landing() {
               </Card>
             </motion.div>
 
-            {/* NFT Feature */}
+            {/* NFT Mint Feature */}
             <motion.div
               variants={{
                 hidden: { opacity: 0, y: 20 },
@@ -185,10 +185,10 @@ export function Landing() {
                     <PaintBucket size={40} />
                   </div>
                   <h3 className="text-2xl font-bold mb-3 group-hover:text-green-500 transition-colors">
-                    🎨 NFTs
+                    🎨 NFT Mint
                   </h3>
                   <p className="text-muted-foreground mb-6">
-                    Build your legacy <br /> Digital mark of India’s strength, forever on-chain.
+                    Build your legacy <br /> Digital mark of India's strength, forever on-chain.
                   </p>
                   <div className="mt-auto">
                     <Button
@@ -196,7 +196,39 @@ export function Landing() {
                       onClick={() => navigate('/mint')}
                       className="border-green-500/50 text-green-400 hover:bg-green-500/10"
                     >
-                      Explore NFTs
+                      Mint NFTs
+                      <LucideChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* NFT Collections Feature */}
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                show: { opacity: 1, y: 0 },
+              }}
+            >
+              <Card className="bg-black/30 backdrop-blur-sm border-white/10 hover:border-blue-500/50 transition-all overflow-hidden group h-full">
+                <CardContent className="p-8 flex flex-col items-center text-center h-full">
+                  <div className="mb-6 p-4 rounded-full bg-blue-500/10 text-blue-500 group-hover:scale-110 transition-transform">
+                    <Grid size={40} />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3 group-hover:text-blue-500 transition-colors">
+                    🖼️ NFT Collections
+                  </h3>
+                  <p className="text-muted-foreground mb-6">
+                    Browse our gallery <br /> Discover the finest Indian pride digital collectibles.
+                  </p>
+                  <div className="mt-auto">
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate('/my-nfts')}
+                      className="border-blue-500/50 text-blue-400 hover:bg-blue-500/10"
+                    >
+                      View Collections
                       <LucideChevronRight className="ml-2 h-4 w-4" />
                     </Button>
                   </div>
@@ -220,7 +252,7 @@ export function Landing() {
               A Memecoin with Style & Spice
             </h2>
             <p className="text-muted-foreground mb-8 text-lg">
-              $PKMB is more than just a memecoin — it’s a symbol of India’s unwavering unity and strength. While some nations stumble, Bharat rises. With our community-driven spirit and a touch of humor, we’re reshaping fun in Web3, all while standing tall and proud. Join us in this journey of laughter, memes, and a sprinkle of spice. Together, we’re not just creating a coin; we’re building a legacy. 
+              $PKMB is more than just a memecoin — it's a symbol of India's unwavering unity and strength. While some nations stumble, Bharat rises. With our community-driven spirit and a touch of humor, we're reshaping fun in Web3, all while standing tall and proud. Join us in this journey of laughter, memes, and a sprinkle of spice. Together, we're not just creating a coin; we're building a legacy. 
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
               <div className="bg-black/20 backdrop-blur-sm rounded-lg p-4 border border-white/5">
