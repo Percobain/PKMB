@@ -98,6 +98,7 @@ export function Landing() {
                 'India’s GDP hits trillions. Pakistan hits rock bottom.',
                 'We hit boundaries. They cross them illegally.',
                 'We build tech giants. They build terrorists.',
+                'Chand pe Jhanda lagane mein aur Jhande pe Chand lagane mein farak hai.',
                 '1947 | 1965 | 1971 | 1999 | 2025'
               ].map((item, index) => (
                 <span key={index} className="mx-8">
@@ -287,7 +288,28 @@ export function Landing() {
           className="relative z-10 w-full border-t border-white/10 py-6 mt-10"
         >
           <div className="container mx-auto text-center text-sm text-muted-foreground">
-            <p>Made with spice 🇮🇳 | 100% Satire | Not financial advice</p>
+            <p>
+              Made with spice by{" "}
+              <a 
+                href="https://twitter.com/shreyanstatiya" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="relative inline-block group"
+              >
+                <span className="hover:text-primary transition-colors">Shreyans</span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-orange-500 to-green-500 group-hover:w-full transition-all duration-300"></span>
+              </a>
+              {" & "}
+              <a 
+                href="https://twitter.com/Amandeeep02" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="relative inline-block group"
+              >
+                <span className="hover:text-primary transition-colors">Amandeep</span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-orange-500 to-green-500 group-hover:w-full transition-all duration-300"></span>
+              </a>
+            </p>
           </div>
         </motion.footer>
       </div>
