@@ -143,12 +143,6 @@ export function ViewNftPage() {
                     </div>
                   </div>
                 )}
-                
-                <div className="text-center mt-4 text-xs text-muted-foreground">
-                  <p className="font-mono break-all px-2">
-                    Metadata: {metadataCid?.substring(0, 8)}...{metadataCid?.substring(metadataCid.length - 8)}
-                  </p>
-                </div>
               </CardContent>
             </Card>
           )}
