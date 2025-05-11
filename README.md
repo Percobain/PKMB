@@ -11,9 +11,9 @@ Website: [https://www.pkmb.xyz/](https://www.pkmb.xyz/)
 
 ## Demo
 
-[PKMB Demo Video](./demo/PKMB.mp4)
-
 Watch the full demo video to see PKMB in action! The video demonstrates the token faucet, NFT minting, and social sharing features.
+
+[![Watch the video](https://img.youtube.com/vi/kEIuIRhmbOU/maxresdefault.jpg)](https://youtu.be/kEIuIRhmbOU)
 
 ## Features
 
